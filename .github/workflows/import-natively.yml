@@ -53,14 +53,13 @@ jobs:
           # Do not publish local secrets, machine-specific state, or installed dependencies.
           find . -type f \( -name '.env' -o -name '.env.*' -o -name '*.pem' -o \
             -name '*.key' -o -name '*.p12' -o -name '*.pfx' \) -delete
-          rm -rf node_modules .git
+          rm -rf node_modules
 
       - name: Commit imported review source
         shell: bash
         run: |
           set -euo pipefail
-          git init
-          git checkout -b review/imported-source
+          git checkout -B review/imported-source
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
@@ -69,5 +68,4 @@ jobs:
             exit 1
           fi
           git commit -m "Import Natively readable review source"
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin review/imported-source
