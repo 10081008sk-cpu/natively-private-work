@@ -2,6 +2,8 @@ import { BrowserWindow, screen, app } from "electron"
 import { WindowHelper } from "./WindowHelper"
 import path from "node:path"
 
+type WindowActivationOptions = { activate?: boolean };
+
 const isDev = process.env.NODE_ENV === "development"
 
 const startUrl = isDev
