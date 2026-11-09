@@ -73,7 +73,7 @@ export class OllamaManager {
 
             this.ollamaProcess.on('error', (err) => {
                 // Handle ENOENT (Ollama not installed) gracefully
-                if (err.code === 'ENOENT') {
+                if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
                     console.warn('[OllamaManager] Ollama not installed (ENOENT). Falling back to cloud/local embeddings silently.');
                     this.isAppManaged = false;
                     this.ollamaProcess = null;
