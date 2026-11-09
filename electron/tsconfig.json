@@ -25,6 +25,13 @@
     "test/**",
     "**/* - Backup.ts",
     "**/* - backup*.ts",
-    "**/* -  backup*.ts"
+    "**/* -  backup*.ts",
+    "EnterpriseArchitecture.ts",
+    "WindowManager.ts",
+    "main/AnalyticsService.ts",
+    "main/SafeIPC.ts",
+    "main/SidecarManager.ts",
+    "main/STTErrorHandler.ts",
+    "sidecar/**"
   ]
 }
