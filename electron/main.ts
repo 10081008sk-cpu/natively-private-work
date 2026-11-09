@@ -203,7 +203,6 @@ import { RAGManager } from "./rag/RAGManager"
 import { DatabaseManager } from "./db/DatabaseManager"
 import { warmupIntentClassifier } from "./llm"
 import { NoiseSuppressor } from "./audio/noiseSuppressor"
-import { SidecarIntegration, getSidecarIntegration, destroySidecarIntegration } from './sidecar/sidecarIntegration';
 
 /** Unified type for all STT providers with optional extended capabilities */
 type STTProvider = (GoogleSTT | RestSTT | DeepgramStreamingSTT | SonioxStreamingSTT | ElevenLabsStreamingSTT | OpenAIStreamingSTT | NativelyProSTT | WebSpeechSTT | SherpaSTT) & {
@@ -312,7 +311,6 @@ export class AppState {
   private _dockReassertTimers: NodeJS.Timeout[] = []; // Re-assert dock-hidden state after show+focus
   private _ollamaBootstrapPromise: Promise<void> | null = null;
   private screenshotCaptureInProgress: boolean = false;
-  private sidecarIntegration: SidecarIntegration | null = null;
   /** Selected STT provider used by capture callbacks (which outlive setupSystemAudioPipeline). */
   private sttProvider: string = 'none';
   private assistantWindow: BrowserWindow | null = null;
@@ -1191,9 +1189,9 @@ export class AppState {
       // Fully-offline Sherpa-ONNX (Silero VAD + multilingual Whisper int8).
       // Lazy require so the native addon + ~150 MB model are only loaded when
       // the user has actually selected this provider.
-      const { SherpaAutoService } = require('../src/main/services/SherpaAutoService');
-      console.log(`[Main] Using SherpaAutoService (sherpa-onnx) for ${speaker}`);
-      stt = SherpaAutoService.getInstance();
+      const { SherpaSTT: SherpaSTTProvider } = require('./audio/SherpaSTT');
+      console.log(`[Main] Using SherpaSTT adapter (Sherpa-ONNX + Silero VAD) for ${speaker}`);
+      stt = new SherpaSTTProvider(speaker === 'interviewer' ? 'system' : 'mic');
     } else if (sttProvider === 'local-whisper') {
       const { LocalWhisperSTT } = require('./audio/LocalWhisperSTT');
       const sm = SettingsManager.getInstance();
@@ -1499,7 +1497,6 @@ export class AppState {
     // Cache the device rate; refresh it only on the first chunk or an explicit
     // sample_rate_changed event, never by repeatedly querying per audio chunk.
     let systemSampleRate: number | null = null;
-    let sidecarSystemRateApplied = false;
     capture.on('data', (chunk: Buffer) => {
       const now = Date.now();
       if (lastChunkAt > 0) {
@@ -1522,10 +1519,6 @@ export class AppState {
         this.googleSTT.setAudioChannelCount?.(1);
         this._sysSttRateApplied = true;
         console.log(`${prefix}Interviewer STT rate locked from first chunk: ${systemSampleRate}Hz`);
-      }
-      if (systemSampleRate !== null && !sidecarSystemRateApplied && this.sttProvider === 'sherpa' && this.sidecarIntegration) {
-        this.sidecarIntegration.setSystemSampleRate(systemSampleRate);
-        sidecarSystemRateApplied = true;
       }
       if (chunkCount <= 3 || chunkCount % 500 === 0) {
         console.log(`${prefix}SystemAudio->STT: chunk #${chunkCount}, ${chunk.length}B, googleSTT=${this.googleSTT ? 'active' : 'NULL'}`);
@@ -1564,9 +1557,7 @@ export class AppState {
       // If the Sherpa sidecar is unavailable, use the configured provider
       // instance (SherpaAutoService for the Sherpa selection), not a hard-coded
       // Google fallback that may have no credentials.
-      if (this.sttProvider === 'sherpa' && this.sidecarIntegration) {
-        this.sidecarIntegration.writeSystemAudio(chunk);
-      } else if (this.googleSTT) {
+      if (this.googleSTT) {
         if (this._noiseCancellationEnabled && this._sysNoiseSuppressor) {
           const processed = this._sysNoiseSuppressor.processBuffer(chunk);
           this.googleSTT.write(processed);
@@ -1577,20 +1568,11 @@ export class AppState {
     });
     capture.on('sample_rate_changed', (rate: number) => {
       systemSampleRate = rate;
-      sidecarSystemRateApplied = false;
       console.log(`${prefix}SystemAudioCapture rate updated dynamically to ${rate}Hz`);
       this.googleSTT?.setSampleRate(rate);
-      if (this.sttProvider === 'sherpa' && this.sidecarIntegration) {
-        this.sidecarIntegration.setSystemSampleRate(rate);
-        sidecarSystemRateApplied = true;
-      }
     });
     capture.on('speech_ended', () => {
-      if (this.sttProvider === 'sherpa' && this.sidecarIntegration) {
-        this.sidecarIntegration.notifySystemSpeechEnded?.();
-      } else {
-        this.googleSTT?.notifySpeechEnded?.();
-      }
+      this.googleSTT?.notifySpeechEnded?.();
     });
     // setupAudioRecoveryHandler registers its own 'error' listener — do not
     // add a duplicate logger here or the same error reports twice.
@@ -1699,11 +1681,7 @@ export class AppState {
       // the user's practice questions are treated as interviewer questions.
       if (this._mockInterviewMode) {
         // Use Sidecar for Sherpa; if Sidecar is unavailable, use the already-created Sherpa STT instance.
-        if (this.sttProvider === 'sherpa' && this.sidecarIntegration) {
-          this.sidecarIntegration.writeMicAudio(processedChunk);
-        } else {
-          this.googleSTT?.write(processedChunk);
-        }
+        this.googleSTT?.write(processedChunk);
         return;
       }
 
@@ -1712,11 +1690,7 @@ export class AppState {
       // continue to work. Disable for mock/self-testing mode.
       if (!this._onlyInterviewerMode) {
         // Use Sidecar for Sherpa; if Sidecar is unavailable, use the already-created Sherpa STT instance.
-        if (this.sttProvider === 'sherpa' && this.sidecarIntegration) {
-          this.sidecarIntegration.writeMicAudio(processedChunk);
-        } else {
-          this.googleSTT_User?.write(processedChunk);
-        }
+        this.googleSTT_User?.write(processedChunk);
       }
     });
     capture.on('sample_rate_changed', (rate: number) => {
@@ -1828,17 +1802,6 @@ export class AppState {
             terminal: true,
             stuck: false,
           });
-        }
-      }
-
-      // Initialize Sidecar Integration for Sherpa-ONNX
-      if (sttProv === 'sherpa' && !this.sidecarIntegration) {
-        console.log('[Main] Initializing Sidecar Integration for Sherpa-ONNX...');
-        this.sidecarIntegration = getSidecarIntegration(this);
-        const initialized = this.sidecarIntegration.initialize();
-        if (!initialized) {
-          console.warn('[Main] Sidecar integration initialization failed, falling back to standard SherpaSTT');
-          this.sidecarIntegration = null;
         }
       }
 
@@ -3082,13 +3045,6 @@ export class AppState {
         this.googleSTT_User?.removeAllListeners();
         this.googleSTT_User = null;
 
-        // Destroy sidecar integration if active
-        if (this.sidecarIntegration) {
-          this.sidecarIntegration.destroy();
-          destroySidecarIntegration();
-          this.sidecarIntegration = null;
-        }
-
         this._micNoiseSuppressor = new (require('./audio/noiseSuppressor').NoiseSuppressor)();
         this._sysNoiseSuppressor = new (require('./audio/noiseSuppressor').NoiseSuppressor)();
 
@@ -3141,13 +3097,6 @@ export class AppState {
     this.googleSTT = null;
     this.googleSTT_User?.removeAllListeners();
     this.googleSTT_User = null;
-
-    // Destroy sidecar integration if active
-    if (this.sidecarIntegration) {
-      this.sidecarIntegration.destroy();
-      destroySidecarIntegration();
-      this.sidecarIntegration = null;
-    }
 
     if (this._pendingTeardown) {
       this._pendingTeardown = null;
