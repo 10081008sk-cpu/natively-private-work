@@ -152,7 +152,7 @@ export function initializeIpcHandlers(appState: AppState): void {
       const launcherWin = appState.getWindowHelper().getLauncherWindow()
 
       if (settingsWin && !settingsWin.isDestroyed() && settingsWin.webContents.id === senderWebContents.id) {
-        appState.settingsWindowHelper.setWindowDimensions(settingsWin, width, height)
+        appState.settingsWindowHelper.setWindowDimensions(width, height)
       } else if (
         overlayWin && !overlayWin.isDestroyed() && overlayWin.webContents.id === senderWebContents.id
       ) {
