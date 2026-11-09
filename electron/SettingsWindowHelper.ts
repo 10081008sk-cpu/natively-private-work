@@ -8,9 +8,6 @@ const startUrl = isDev
     ? "http://localhost:5180"
     : `file://${path.join(app.getAppPath(), "dist/index.html")}`
 
-type WindowActivationOptions = {
-    activate?: boolean
-}
 
 async function loadUrlWithRetry(
   win: BrowserWindow,
@@ -49,10 +46,6 @@ async function loadUrlWithRetry(
   }
   console.error(`[SettingsWindowHelper:${tag}] All 10 loadURL attempts exhausted for ${url}`);
   return false;
-}
-
-type WindowActivationOptions = {
-    activate?: boolean
 }
 
 export class SettingsWindowHelper {
