@@ -148,7 +148,7 @@ export class ProcessingHelper {
     const view = this.appState.getView()
 
     if (view === "queue") {
-      const screenshotQueue = this.appState.getScreenshotHelper().getScreenshotQueue()
+      const screenshotQueue = this.appState.getScreenshotQueue()
       if (screenshotQueue.length === 0) {
         mainWindow.webContents.send(this.appState.PROCESSING_EVENTS.NO_SCREENSHOTS)
         return
@@ -198,7 +198,7 @@ export class ProcessingHelper {
 
     } else {
       // Debug mode
-      const extraScreenshotQueue = this.appState.getScreenshotHelper().getExtraScreenshotQueue()
+      const extraScreenshotQueue = this.appState.getExtraScreenshotQueue()
       if (extraScreenshotQueue.length === 0) {
         // console.log("No extra screenshots to process")
         mainWindow.webContents.send(this.appState.PROCESSING_EVENTS.NO_SCREENSHOTS)
