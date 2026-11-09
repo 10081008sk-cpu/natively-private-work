@@ -3400,6 +3400,22 @@ export class AppState {
     return this.windowHelper.getMainWindow()
   }
 
+  public getView(): 'queue' | 'solutions' {
+    return this.view;
+  }
+
+  public getProblemInfo(): AppState['problemInfo'] {
+    return this.problemInfo;
+  }
+
+  public getThemeManager(): ThemeManager {
+    return this.themeManager;
+  }
+
+  public getKnowledgeOrchestrator(): any {
+    return this.knowledgeOrchestrator;
+  }
+
   public getWindowHelper(): WindowHelper {
     return this.windowHelper
   }
