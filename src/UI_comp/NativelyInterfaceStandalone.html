@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Natively Interface — Standalone Mock</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    .ot-primary { color: #e2e8f0; }
+    .ot-secondary { color: #94a3b8; }
+    .ot-muted { color: #64748b; }
+    .ot-interactive { color: #94a3b8; }
+    .shell-surface { background: rgba(18,18,30,0.85); }
+    .subtle-surface { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+    .icon-surface { background: rgba(255,255,255,0.06); }
+    .chip-surface { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+    .interaction-press:active { transform: scale(0.95); }
+    .transcript-surface { background: rgba(255,255,255,0.02); border-radius: 0.75rem; }
+    .stt-pulse-red { animation: sttPulseRed 2s ease-in-out infinite; }
+    .stt-pulse-amber { animation: sttPulseAmber 2s ease-in-out infinite; }
+    @keyframes sttPulseRed { 0%,100%{opacity:0.3} 50%{opacity:0.6} }
+    @keyframes sttPulseAmber { 0%,100%{opacity:0.15} 50%{opacity:0.35} }
+    .ease-sculpted { transition-timing-function: cubic-bezier(0.25,0.1,0.25,1); }
+    input::placeholder { color: #475569; }
+    ::-webkit-scrollbar { display: none; }
+    .msg-user { background: rgba(0,122,255,0.15); border-color: rgba(0,122,255,0.2); }
+    .msg-assistant { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+  </style>
+</head>
+<body>
+
+<!-- ─── ROOT: full-viewport column ─── -->
+<div class="flex flex-col items-center w-fit mx-auto bg-transparent p-0 rounded-[24px] font-sans gap-2 ot-primary select-none"
+     style="display:flex;flex-direction:column;height:100vh;overflow:hidden;">
+
+  <!-- ═══ EXPANDED PANEL ═══ -->
+  <div class="flex flex-col items-center gap-2 w-full h-full min-h-0">
+
+    <!-- ── Header Bar (drag region) ── -->
+    <div class="flex items-center w-full justify-between" style="-webkit-app-region:drag">
+
+      <!-- Window Controls (macOS traffic-light dots) -->
+      <div style="-webkit-app-region:no-drag">
+        <div class="flex items-center gap-1.5 px-3 py-1.5">
+          <span class="w-3.5 h-3.5 rounded-full bg-[#ff5f57]"></span>
+          <span class="w-3.5 h-3.5 rounded-full bg-[#febc2e]"></span>
+          <span class="w-3.5 h-3.5 rounded-full bg-[#28c840]"></span>
+        </div>
+      </div>
+
+      <!-- TopPill (logo + toggle + quit) -->
+      <div style="-webkit-app-region:no-drag">
+        <div class="flex items-center gap-2 rounded-full bg-white/5 backdrop-blur-md pl-1.5 pr-1.5 py-1.5">
+          <!-- Logo -->
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <!-- Toggle button -->
+          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-all active:scale-95">
+            <i data-lucide="chevron-up" class="w-3.5 h-3.5 text-white/70"></i>
+            <span class="text-[12px] font-medium tracking-wide text-white/80">Hide</span>
+          </div>
+          <!-- Quit button -->
+          <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center cursor-pointer hover:bg-red-500/10 hover:text-red-400 transition-all active:scale-95">
+            <span class="w-3.5 h-3.5 rounded-[3px] bg-current opacity-80"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right spacer (balance) -->
+      <div class="w-[138px]"></div>
+    </div>
+
+    <!-- ── Status Indicator Badges ── -->
+    <div class="flex items-center gap-2 w-[600px] justify-center flex-wrap">
+      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-purple-500/15 text-purple-400 border border-purple-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> Mock Interview
+      </span>
+      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-blue-500/15 text-blue-400 border border-blue-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span> Interviewer Only
+      </span>
+      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-green-500/15 text-green-400 border border-green-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Noise Cancel
+      </span>
+      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-violet-500/15 text-violet-400 border border-violet-500/20">
+        <i data-lucide="monitor" class="w-2.5 h-2.5"></i> Screen
+      </span>
+    </div>
+
+    <!-- ═══ SHELL PANEL ═══ -->
+    <div class="relative max-w-full backdrop-blur-2xl border rounded-[24px] flex flex-col shell-surface"
+         style="width:600px;min-height:400px;flex:1;height:100%;overflow:hidden;border-color:rgba(255,255,255,0.08);">
+
+      <!-- ── Scrollable Content Area ── -->
+      <div class="min-h-0 pb-4" style="flex:1;overflow-y:auto;scrollbar-width:none;">
+
+        <!-- ── Status Pills Row ── -->
+        <div class="relative flex flex-wrap items-center justify-center gap-1.5 px-4 pt-3 pb-1">
+          <!-- Mode pill -->
+          <div class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur-xl bg-black/20 border-white/10 ot-primary" title="Active mode: System Design">
+            <i data-lucide="layout-grid" class="h-3 w-3 opacity-70"></i>
+            <span>Mode: System Design</span>
+          </div>
+          <!-- Mic pill (ok) -->
+          <div class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur-xl bg-black/20 border-white/10 text-emerald-400">
+            <i data-lucide="mic" class="h-3 w-3 opacity-70"></i>
+            <span>Mic Active</span>
+          </div>
+          <!-- Vision pill (ok) -->
+          <div class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur-xl bg-black/20 border-white/10 text-emerald-400" title="Latest answer used claude-sonnet-4 (claude-sonnet-4-20250514) vision on the screenshot">
+            <i data-lucide="monitor" class="h-3 w-3 opacity-70"></i>
+            <span>Vision: claude-sonnet-4</span>
+          </div>
+          <!-- Privacy pill -->
+          <div class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur-xl bg-black/20 border-white/10 ot-primary" title="Cloud provider">
+            <i data-lucide="shield-check" class="h-3 w-3 opacity-70"></i>
+            <span>Cloud</span>
+          </div>
+          <!-- Vision failure pill (warn tone) -->
+          <div class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur-xl bg-black/20 border-white/10 text-amber-400" title="No vision-capable provider is configured.">
+            <i data-lucide="monitor" class="h-3 w-3 opacity-70"></i>
+            <span>Vision failed</span>
+          </div>
+        </div>
+
+        <!-- ── Dynamic Action Bar (suggestion chips) ── -->
+        <div class="px-4 py-2">
+          <div class="flex gap-2 overflow-x-auto pb-1">
+            <button class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 whitespace-nowrap bg-violet-500/10 border-violet-500/30 text-violet-300 hover:bg-violet-500/20">
+              <i data-lucide="zap" class="w-3 h-3"></i> Explain architecture
+            </button>
+            <button class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 whitespace-nowrap bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+              <i data-lucide="zap" class="w-3 h-3"></i> Propose API design
+            </button>
+            <button class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 whitespace-nowrap bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20">
+              <i data-lucide="zap" class="w-3 h-3"></i> Estimate scale
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Rolling Transcript Panel (streaming text viewer) ── -->
+        <div class="relative w-full px-4 mb-2">
+          <!-- Masked container -->
+          <div class="relative w-full overflow-hidden rounded-xl transcript-surface"
+               style="mask-image:linear-gradient(to bottom,black 60%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 60%,transparent 100%);">
+            <!-- Content -->
+            <div class="w-[90%] mx-auto pt-2">
+              <div class="overflow-hidden whitespace-nowrap scroll-smooth transition-all duration-500 text-right"
+                   style="mask-image:linear-gradient(to right,transparent,black 10%,black 90%,transparent);">
+                <span class="inline-flex items-center text-[13px] italic leading-7 text-slate-500 transition-all duration-300">
+                  So let's talk about designing a URL shortening service like TinyURL. What are the key requirements you'd consider?
+                  <span class="inline-flex items-center ml-2">
+                    <span class="w-[3px] h-[3px] bg-emerald-400/70 rounded-full animate-pulse"></span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STT Error & Reconnecting States (examples) ── -->
+        <!-- Uncomment to see: -->
+        <!--
+        <div class="relative w-full px-4 mb-2">
+          <div class="relative w-full overflow-hidden rounded-xl" style="background:linear-gradient(180deg,rgba(220,38,38,0.12) 0%,rgba(220,38,38,0.04) 50%,transparent 100%);mask-image:linear-gradient(to bottom,black 60%,transparent 100%);">
+            <div class="absolute inset-0 bg-red-500/10 stt-pulse-red"></div>
+            <div class="w-[90%] mx-auto pt-2">
+              <span class="flex items-center justify-center w-full text-[12px] leading-7 gap-3">
+                <span class="flex items-center gap-1.5 text-red-400 font-medium tracking-wide truncate max-w-[44%]">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                  System: No Audio Device
+                </span>
+                <span class="text-red-400/40 font-light">/</span>
+                <span class="flex items-center gap-1.5 text-red-400 font-medium tracking-wide truncate max-w-[44%]">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                  Mic: Permission Denied
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        -->
+
+        <!-- ── Thread Toggle Tabs ── -->
+        <div class="flex items-center gap-1 px-4 mt-2 mb-1">
+          <div class="flex items-center gap-1 px-1 py-1 bg-white/5 rounded-lg w-fit">
+            <button class="px-3 py-1 rounded-md text-[11px] font-medium transition-all bg-white/10 text-white shadow-sm">
+              Meeting Chat
+            </button>
+            <button class="px-3 py-1 rounded-md text-[11px] font-medium transition-all text-white/50 hover:text-white/80 flex items-center gap-1">
+              <i data-lucide="camera" class="w-3 h-3"></i>
+              Screenshot Analysis
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Vision Status Indicator (shown during analysis) ── -->
+        <div class="mx-4 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300">
+          <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+          <span>Analyzing screenshot with vision provider...</span>
+        </div>
+
+        <!-- ── Chat Messages ── -->
+        <div class="p-4 space-y-3">
+
+          <!-- Screenshot analysis message (user with screenshot) -->
+          <div class="flex justify-start">
+            <div class="max-w-[75%] px-3.5 py-2.5 rounded-2xl subtle-surface">
+              <div class="flex items-center gap-1.5 mb-1.5 text-[11px] font-medium text-emerald-400">
+                <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                <span>Screenshot analyzed</span>
+              </div>
+              <div class="h-12 w-32 rounded border border-white/10 bg-gradient-to-br from-violet-500/20 to-blue-500/20 flex items-center justify-center text-[9px] ot-muted mb-1.5">
+                [screenshot preview]
+              </div>
+              <div class="text-[13px] leading-relaxed ot-primary markdown-content">
+                <p><strong>System Design: URL Shortener</strong></p>
+                <p>Key points: hash-based keys, Redis cache, consistent hashing for DB shards.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- User message (right-aligned, blue) -->
+          <div class="flex justify-end">
+            <div class="max-w-[75%] px-3.5 py-2.5 rounded-2xl msg-user border">
+              <div class="text-[13px] leading-relaxed text-white/90">
+                <p>I'd start with requirements: 100M+ daily writes, low latency reads, custom aliases, analytics, and high availability.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assistant message (left-aligned, subtle) -->
+          <div class="flex justify-start">
+            <div class="max-w-[75%] px-3.5 py-2.5 rounded-2xl msg-assistant border">
+              <div class="flex items-center gap-2 mb-1.5">
+                <i data-lucide="sparkles" class="w-3 h-3 text-violet-400"></i>
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-violet-400">Assistant</span>
+              </div>
+              <div class="text-[13px] leading-relaxed ot-primary">
+                <p class="mb-1">Good start! Here's a structured breakdown:</p>
+                <p><strong>Functional Requirements:</strong></p>
+                <ul class="list-disc pl-4 mt-1 space-y-0.5">
+                  <li>Create shortened URLs (with optional custom alias)</li>
+                  <li>Redirect with &lt;10ms p99 latency</li>
+                  <li>Analytics: click count, referrer, geo, timestamps</li>
+                </ul>
+                <pre class="mt-2 p-2 rounded-lg bg-black/40 text-[11px] font-mono overflow-x-auto">function generateShortUrl(original, custom) {
+    const hash = base62Encode(md5(original));
+    return custom || hash.slice(0, 7);
+}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- "What to Answer" intent card -->
+          <div class="rounded-lg p-3 my-1 border subtle-surface">
+            <div class="flex items-center gap-2 mb-2 font-semibold text-xs uppercase tracking-wide text-emerald-400">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+              <span>What to Answer</span>
+            </div>
+            <div class="text-[13px] leading-relaxed ot-primary">
+              <p class="mb-1">Mention the key <strong>design trade-offs</strong>:</p>
+              <ul class="list-disc pl-4 space-y-0.5">
+                <li>Hash function choice (MD5 vs base62) and collision strategy</li>
+                <li>Database sharding approach (consistent hashing)</li>
+                <li>Caching layer (Redis) and cache invalidation</li>
+                <li>Read vs write optimization trade-off</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Shorten intent card -->
+          <div class="rounded-lg p-3 my-1 border subtle-surface">
+            <div class="flex items-center gap-2 mb-2 font-semibold text-xs uppercase tracking-wide text-cyan-300">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+              <span>Shortened</span>
+            </div>
+            <div class="text-[13px] leading-relaxed ot-secondary">
+              <p>Design a scalable URL shortener with Redis caching, consistent hashing for DB shards, and MD5-base62 hashing.</p>
+            </div>
+          </div>
+
+          <!-- Recap intent card -->
+          <div class="rounded-lg p-3 my-1 border subtle-surface">
+            <div class="flex items-center gap-2 mb-2 font-semibold text-xs uppercase tracking-wide text-indigo-300">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Recap</span>
+            </div>
+            <div class="text-[13px] leading-relaxed ot-secondary">
+              <p>We discussed: (1) Requirements for TinyURL, (2) Hash-based key generation with base62, (3) Redis caching for hot URLs, (4) Database sharding with consistent hashing.</p>
+            </div>
+          </div>
+
+          <!-- Follow-Up Questions intent card -->
+          <div class="rounded-lg p-3 my-1 border subtle-surface">
+            <div class="flex items-center gap-2 mb-2 font-semibold text-xs uppercase tracking-wide text-amber-300">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+              <span>Follow-Up Questions</span>
+            </div>
+            <div class="text-[13px] leading-relaxed ot-secondary">
+              <ul class="list-disc pl-4 space-y-0.5">
+                <li>How would you handle rate limiting for URL creation?</li>
+                <li>How would you implement custom aliases?</li>
+                <li>How would you handle redirect analytics at scale?</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- "Say This" (what_to_answer) intent card with code -->
+          <div class="rounded-lg p-3 my-1 border subtle-surface">
+            <div class="flex items-center gap-2 mb-2 font-semibold text-xs uppercase tracking-wide text-emerald-400">
+              <span>Say this</span>
+            </div>
+            <div class="text-[14px] leading-relaxed ot-primary">
+              <p class="mb-2">"For the database layer, I'd use <strong>consistent hashing</strong> across 8 physical shards, each running PostgreSQL with read replicas. Here's a rough schema:"</p>
+              <div class="rounded-lg overflow-hidden border border-white/10 bg-black/40 my-2">
+                <div class="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/10">
+                  <span class="text-[10px] font-mono ot-muted">sql</span>
+                  <button class="p-1 rounded hover:bg-white/10 transition-colors ot-muted">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                  </button>
+                </div>
+                <pre class="p-3 text-[12px] font-mono leading-relaxed overflow-x-auto text-slate-300">CREATE TABLE url_mappings (
+    id BIGSERIAL,
+    short_key VARCHAR(10) PRIMARY KEY,
+    original_url TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    expires_at TIMESTAMP,
+    user_id BIGINT
+);</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Standard message -->
+          <div class="flex justify-start">
+            <div class="max-w-[75%] px-3.5 py-2.5 rounded-2xl msg-assistant border">
+              <div class="text-[13px] leading-relaxed ot-primary">
+                <p>That's a solid approach. Let's also consider the <strong>write path</strong> — how would you ensure the short key is unique under high concurrency?</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Generating... indicator ── -->
+        <div class="px-4 pb-2">
+          <div class="flex justify-start">
+            <div class="px-3 py-2 subtle-surface rounded-full border">
+              <span class="text-[12px] ot-muted">Generating...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Live Interview Panel ── -->
+        <div class="px-3 w-full max-w-full">
+          <div class="rounded-xl border overflow-hidden subtle-surface">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-3 py-2 border-b border-white/10">
+              <span class="text-[10px] uppercase tracking-widest font-semibold font-mono ot-muted flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Live Interview
+                <span class="text-[10px] ot-muted font-normal normal-case">· 3 answered</span>
+              </span>
+              <button class="px-2 py-0.5 rounded-md bg-rose-500/20 hover:bg-rose-500/30 transition-colors text-[10px] font-medium ot-primary">Stop</button>
+            </div>
+
+            <!-- Error Banner -->
+            <div class="mx-3 mt-2 px-3 py-2 rounded-lg border border-rose-500/40 bg-rose-500/15 text-[11px]">
+              <div class="flex items-start gap-2">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-400"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-rose-300 mb-1">Live Interview Setup Error</p>
+                  <p class="text-rose-400/80 leading-relaxed">Microphone not available. Please check your audio settings.</p>
+                </div>
+                <button class="shrink-0 hover:opacity-70 text-rose-400/60"><i data-lucide="x" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+
+            <!-- Performance Alert -->
+            <div class="mx-3 mt-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/15 text-[11px] flex items-center gap-2 text-amber-300">
+              <i data-lucide="zap" class="w-3.5 h-3.5 shrink-0"></i>
+              <span class="flex-1">High latency detected — responses may be slower than usual.</span>
+              <button class="shrink-0 hover:opacity-70"><i data-lucide="x" class="w-3 h-3"></i></button>
+            </div>
+
+            <!-- Technical Q&A -->
+            <div class="max-h-[280px] overflow-y-auto px-3 py-2 space-y-2">
+              <div class="rounded-lg border border-violet-500/20 bg-violet-500/5 p-2.5">
+                <div class="flex items-start gap-2 mb-1.5">
+                  <span class="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+                  </span>
+                  <span class="text-[12px] font-medium ot-primary leading-relaxed">Implement a function to check if a binary tree is balanced.</span>
+                </div>
+                <div class="ml-6 text-[11px] ot-secondary leading-relaxed border-l-2 border-violet-500/20 pl-2.5">
+                  <p>We can use a recursive height-check approach. For each node, compute the height of left and right subtrees and verify the difference is ≤ 1.</p>
+                </div>
+              </div>
+              <div class="rounded-lg border border-violet-500/20 bg-violet-500/5 p-2.5">
+                <div class="flex items-start gap-2 mb-1.5">
+                  <span class="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+                  </span>
+                  <span class="text-[12px] font-medium ot-primary leading-relaxed">What's the time complexity of your solution?</span>
+                </div>
+                <div class="ml-6 flex items-center gap-1.5 text-[10px] ot-muted">
+                  <span class="w-1 h-1 bg-violet-400 rounded-full animate-pulse"></span>
+                  Generating answer...
+                </div>
+              </div>
+            </div>
+
+            <!-- Transcript Feed -->
+            <div class="max-h-[120px] overflow-y-auto px-3 py-2 space-y-1 border-t border-white/10">
+              <span class="text-[9px] uppercase tracking-wider font-semibold ot-muted block mb-1">Raw Transcript</span>
+              <div class="text-[11px] leading-relaxed">
+                <span class="font-semibold text-violet-400">Interviewer:</span>
+                <span class="ot-muted ml-1">Can you write a function to check if a binary tree is balanced?</span>
+              </div>
+              <div class="text-[11px] leading-relaxed">
+                <span class="font-semibold text-emerald-400">You:</span>
+                <span class="ot-muted ml-1">Yes, I'll use a recursive approach that returns the height if balanced, or -1 if unbalanced.</span>
+              </div>
+            </div>
+
+            <!-- Code Analysis -->
+            <div class="px-3 pb-2 space-y-2 max-h-[250px] overflow-y-auto">
+              <div class="rounded-lg border p-2.5 subtle-surface">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[10px] uppercase tracking-wider font-semibold font-mono ot-muted">Python · Analysis</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/15 text-violet-400 font-mono">O(n)</span>
+                </div>
+                <p class="text-[12px] ot-primary leading-relaxed mb-1.5">The solution uses post-order traversal. Each node is visited once, making it O(n) time with O(h) space for the call stack.</p>
+                <p class="text-[11px] ot-muted italic">Space: O(h) · Height-based recursion</p>
+              </div>
+            </div>
+
+            <!-- Empty state (pulse only) -->
+            <!-- <div class="px-3 py-6 text-center"><div class="w-5 h-5 mx-auto mb-2 ot-muted opacity-30"><div class="w-2 h-2 rounded-full bg-emerald-500/60 animate-pulse mx-auto"></div></div></div> -->
+          </div>
+        </div>
+
+      </div><!-- ── end scrollable-content ── -->
+
+      <!-- ── Warning Banners (always visible, outside scrollable area) ── -->
+      <div class="relative z-20" style="flex:0 0 auto;">
+
+        <!-- System Audio Permission Warning -->
+        <div class="flex items-center justify-between mx-4 mt-3 mb-1 px-3.5 py-2.5 bg-yellow-500/10 border border-yellow-500/20 rounded-[12px] shadow-sm">
+          <div class="flex flex-col gap-1 pr-3">
+            <div class="flex items-center gap-2 text-[12.5px] text-yellow-400/90 font-medium leading-tight">
+              <div class="shrink-0 p-1 bg-yellow-500/20 rounded-full">
+                <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <span>Screen Recording Permission Denied</span>
+            </div>
+            <p class="text-[11px] text-yellow-400/60 leading-snug pl-[26px]">Natively needs screen recording permission to use vision features. Grant access in System Settings.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="px-3 py-1.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-500 text-[11px] font-semibold transition-all active:scale-95 border border-yellow-500/20 shadow-sm">Open Settings</button>
+            <button class="p-1.5 rounded-full hover:bg-white/10 text-yellow-500/50 hover:text-yellow-400 transition-colors" title="Dismiss">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STT Not Configured Warning -->
+        <div class="flex items-center justify-between mx-4 mt-3 mb-1 px-3.5 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-[12px] shadow-sm">
+          <div class="flex flex-col gap-1 pr-3">
+            <div class="flex items-center gap-2 text-[12.5px] text-orange-400/90 font-medium leading-tight">
+              <div class="shrink-0 p-1 bg-orange-500/20 rounded-full">
+                <svg class="w-3.5 h-3.5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </div>
+              <span>Transcription Not Configured</span>
+            </div>
+            <p class="text-[11px] text-orange-400/60 leading-snug pl-[26px]">No STT provider selected. Open Settings → Audio to pick one.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="px-3 py-1.5 rounded-lg bg-orange-500/15 hover:bg-orange-500/25 text-orange-500 text-[11px] font-semibold transition-all active:scale-95 border border-orange-500/20 shadow-sm">Open Settings</button>
+            <button class="p-1.5 rounded-full hover:bg-white/10 text-orange-500/50 hover:text-orange-400 transition-colors" title="Dismiss">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Sticky Footer ── -->
+      <div class="relative z-40" style="flex-shrink:0;margin:0;">
+
+        <!-- Quick Actions -->
+        <div class="flex flex-wrap justify-center items-center gap-1.5 px-4 pb-3 pt-1">
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 chip-surface hover:bg-white/10 ot-interactive">
+            <i data-lucide="pencil" class="w-3 h-3 opacity-70"></i> What to answer?
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 chip-surface hover:bg-white/10 ot-interactive">
+            <i data-lucide="message-square" class="w-3 h-3 opacity-70"></i> Clarify
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 chip-surface hover:bg-white/10 ot-interactive">
+            <i data-lucide="lightbulb" class="w-3 h-3 opacity-70"></i> Brainstorm
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 chip-surface hover:bg-white/10 ot-interactive">
+            <i data-lucide="refresh-cw" class="w-3 h-3 opacity-70"></i> Recap
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 chip-surface hover:bg-white/10 ot-interactive">
+            <i data-lucide="help-circle" class="w-3 h-3 opacity-70"></i> Follow Up Question
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 chip-surface hover:bg-white/10 ot-interactive">
+            <i data-lucide="code" class="w-3 h-3 opacity-70"></i> Code
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all active:scale-95 duration-200 whitespace-nowrap shrink-0 bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30 animate-pulse">
+            <i data-lucide="radio" class="w-3 h-3"></i> Live
+          </button>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-3 pt-0" style="background:rgba(18,18,30,0.85);">
+
+          <!-- Screenshot Attachment Preview -->
+          <div class="mb-2 rounded-lg p-2 transition-all duration-200 border subtle-surface">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] font-medium ot-primary">2 screenshots attached</span>
+              <button class="p-1 rounded-full hover:bg-white/10 transition-colors ot-interactive" title="Remove all">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div class="flex gap-1.5 overflow-x-auto max-w-full pb-1">
+              <div class="relative group shrink-0">
+                <div class="h-10 w-16 rounded border border-white/20 bg-gradient-to-br from-violet-500/30 to-blue-500/30 flex items-center justify-center text-[8px] ot-muted">
+                  mock1
+                </div>
+                <button class="absolute -top-1 -right-1 w-4 h-4 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <i data-lucide="x" class="w-2.5 h-2.5 text-white"></i>
+                </button>
+              </div>
+              <div class="relative group shrink-0">
+                <div class="h-10 w-16 rounded border border-white/20 bg-gradient-to-br from-emerald-500/30 to-teal-500/30 flex items-center justify-center text-[8px] ot-muted">
+                  mock2
+                </div>
+                <button class="absolute -top-1 -right-1 w-4 h-4 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <i data-lucide="x" class="w-2.5 h-2.5 text-white"></i>
+                </button>
+              </div>
+            </div>
+            <span class="text-[10px] ot-muted">Ask a question or click Answer</span>
+          </div>
+
+          <!-- Analysis Mode Selector -->
+          <div class="flex flex-wrap items-center gap-1.5 mb-2">
+            <span class="text-[10px] font-medium ot-muted mr-0.5">Analyze as:</span>
+            <button class="px-2 py-0.5 rounded-full text-[10px] font-medium transition-all duration-150 bg-[#007AFF] text-white shadow-sm">Auto</button>
+            <button class="px-2 py-0.5 rounded-full text-[10px] font-medium transition-all duration-150 icon-surface ot-interactive hover:opacity-80">Code Review</button>
+            <button class="px-2 py-0.5 rounded-full text-[10px] font-medium transition-all duration-150 icon-surface ot-interactive hover:opacity-80">DSA</button>
+            <button class="px-2 py-0.5 rounded-full text-[10px] font-medium transition-all duration-150 icon-surface ot-interactive hover:opacity-80">General</button>
+            <!-- DSA language selector (shown when DSA mode is active) -->
+            <select class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-medium icon-surface ot-interactive border-0 outline-none cursor-pointer bg-transparent">
+              <option>Python</option>
+              <option>Java</option>
+              <option>C++</option>
+              <option>JavaScript</option>
+            </select>
+          </div>
+
+          <!-- Stealth Hotkey Conflict Banner -->
+          <div class="mb-2 px-3 py-2 rounded-xl border border-rose-400/40 bg-rose-500/10 text-[11px] flex items-center gap-2">
+            <span class="ot-primary flex-1">
+              Stealth typing hotkey <kbd class="px-1 py-0.5 rounded bg-white/10 font-mono text-[10px]">Cmd+Shift+Space</kbd> is already in use. Click the input to activate, or rebind in Settings.
+            </span>
+            <button class="px-2 py-1 rounded-md bg-rose-500/20 hover:bg-rose-500/30 transition-colors text-[11px] font-medium ot-primary whitespace-nowrap">Rebind</button>
+            <button class="px-1.5 py-1 rounded-md hover:bg-white/10 transition-colors text-[11px] ot-muted">&times;</button>
+          </div>
+
+          <!-- Stealth Permission Missing Banner -->
+          <div class="mb-2 px-3 py-2 rounded-xl border border-amber-400/40 bg-amber-500/10 text-[11px] flex items-center gap-2">
+            <span class="ot-primary flex-1">
+              Stealth typing needs Accessibility access. Grant it in System Settings, then restart.
+            </span>
+            <button class="px-2 py-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 transition-colors text-[11px] font-medium ot-primary whitespace-nowrap">Open Settings</button>
+            <button class="px-1.5 py-1 rounded-md hover:bg-white/10 transition-colors text-[11px] ot-muted">&times;</button>
+          </div>
+
+          <!-- Text Input -->
+          <input type="text" placeholder="Enter a technology or topic (e.g., Java 8 features)..."
+                 class="w-full border focus:ring-1 rounded-xl pl-3 pr-10 py-2.5 focus:outline-none transition-all duration-200 ease-sculpted text-[13px] leading-relaxed bg-white/5 border-white/10 text-white placeholder-slate-600 focus:ring-blue-500 focus:border-blue-500" />
+
+          <!-- Bottom Row -->
+          <div class="flex items-center justify-between mt-3 px-0.5">
+            <div class="flex items-center gap-1.5">
+              <!-- Model Selector Button -->
+              <button class="flex items-center gap-2 px-3 py-1.5 border rounded-lg transition-colors text-xs font-medium w-[140px] icon-surface ot-interactive hover:bg-white/10 cursor-pointer" style="border-color:rgba(255,255,255,0.08);">
+                <span class="truncate min-w-0 flex-1">Claude Sonnet 4</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 shrink-0"></i>
+              </button>
+
+              <div class="w-px h-3 mx-1" style="background:rgba(255,255,255,0.08);"></div>
+
+              <!-- Settings Button -->
+              <button class="w-7 h-7 flex items-center justify-center rounded-lg icon-surface hover:bg-white/10 ot-interactive transition-colors">
+                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+            <!-- Send Button -->
+            <button class="w-7 h-7 rounded-full flex items-center justify-center bg-[#007AFF] text-white shadow-lg shadow-blue-500/20 hover:bg-[#0071E3] transition-all active:scale-95 cursor-pointer">
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- ── end sticky footer ── -->
+
+    </div><!-- ── end shell-panel ── -->
+  </div><!-- ── end expanded panel ── -->
+</div><!-- ── end root ── -->
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>
