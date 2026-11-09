@@ -1,0 +1,73 @@
+name: Import Natively Project
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-review-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download and extract review archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/natively-import
+          curl --fail --location --silent --show-error --retry 3 \
+            'https://www.dropbox.com/scl/fi/3gny2k7chy6on9n3os7zg/Natively-review-readable.zip?rlkey=c8mkwscno2pogvw8ab1fc2w2h&st=7fr5lgji&dl=1' \
+            --output /tmp/natively-review.zip
+          unzip -q /tmp/natively-review.zip -d /tmp/natively-import
+
+          source_dir="$(find /tmp/natively-import -mindepth 1 -maxdepth 2 -type d -name 'Natively-review-readable' -print -quit)"
+          if [[ -z "$source_dir" ]]; then
+            echo "Could not find Natively-review-readable folder in the ZIP."
+            echo "Archive contents:"
+            find /tmp/natively-import -maxdepth 3 -print | head -200
+            exit 1
+          fi
+
+          rsync -a --exclude='.env' --exclude='.env.*' --exclude='*.pem' \
+            --exclude='*.key' --exclude='*.p12' --exclude='*.pfx' \
+            "$source_dir/" "$GITHUB_WORKSPACE/"
+
+      - name: Restore original source and config extensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -type f \( \
+            -name '*.ts.txt' -o -name '*.tsx.txt' -o -name '*.js.txt' -o \
+            -name '*.jsx.txt' -o -name '*.mts.txt' -o -name '*.cts.txt' -o \
+            -name '*.mjs.txt' -o -name '*.cjs.txt' -o -name '*.json.txt' -o \
+            -name '*.yml.txt' -o -name '*.yaml.txt' -o -name '*.css.txt' -o \
+            -name '*.html.txt' -o -name '*.md.txt' -o -name '*.sh.txt' -o \
+            -name '*.py.txt' \
+          \) -print0 | while IFS= read -r -d '' file; do
+            mv -- "$file" "${file%.txt}"
+          done
+
+          # Do not publish local secrets, machine-specific state, or installed dependencies.
+          find . -type f \( -name '.env' -o -name '.env.*' -o -name '*.pem' -o \
+            -name '*.key' -o -name '*.p12' -o -name '*.pfx' \) -delete
+          rm -rf node_modules .git
+
+      - name: Commit imported review source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init
+          git checkout -b review/imported-source
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No files were imported."
+            exit 1
+          fi
+          git commit -m "Import Natively readable review source"
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin review/imported-source
