@@ -47,8 +47,8 @@ interface ElectronAPI {
     }>;
     getStatus: () => Promise<Record<string, { state: string; metrics: any }>>;
     resetCircuits: () => Promise<void>;
-    enableProvider: (id: string) => boolean;
-    disableProvider: (id: string) => boolean;
+    enableProvider: (id: string) => Promise<boolean>;
+    disableProvider: (id: string) => Promise<boolean>;
     getProviders: () => Promise<any[]>;
   };
 
@@ -122,7 +122,7 @@ interface ElectronAPI {
   // Utility
   platform: string;
   versions: Record<string, string>;
-  getPath: (name: string) => string;
+  getPath: (name: string) => Promise<string>;
 }
 
 declare global {
