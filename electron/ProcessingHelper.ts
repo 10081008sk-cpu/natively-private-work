@@ -156,7 +156,7 @@ export class ProcessingHelper {
 
 
 
-      const allPaths = this.appState.getScreenshotHelper().getScreenshotQueue();
+      const allPaths = this.appState.getScreenshotQueue();
 
       mainWindow.webContents.send(this.appState.PROCESSING_EVENTS.INITIAL_START)
       this.appState.setView("solutions")
