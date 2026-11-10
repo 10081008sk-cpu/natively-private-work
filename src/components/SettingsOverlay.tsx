@@ -1298,6 +1298,53 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                       ))}
                     </div>
 
+                    {/* Restore recognition and response language controls. */}
+                    <div className="bg-bg-card rounded-xl border border-border-subtle p-4 space-y-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-text-primary">Speech Recognition Language</h3>
+                        <p className="text-xs text-text-secondary mt-1">Choose the language used by speech transcription.</p>
+                        <div className="grid grid-cols-2 gap-3 mt-3">
+                          <select
+                            value={selectedSttGroup}
+                            onChange={(e) => setSelectedSttGroup(e.target.value)}
+                            className="w-full rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-sm text-text-primary"
+                          >
+                            {languageGroups.map((group: string) => <option key={group} value={group}>{group}</option>)}
+                          </select>
+                          <select
+                            value={recognitionLanguage}
+                            onChange={(e) => {
+                              const language = e.target.value;
+                              setRecognitionLanguage(language);
+                              void window.electronAPI?.setRecognitionLanguage?.(language);
+                            }}
+                            className="w-full rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-sm text-text-primary"
+                          >
+                            {currentGroupVariants.map((language) => (
+                              <option key={language.deviceId} value={language.deviceId}>{language.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {autoDetectedLanguage && <p className="text-xs text-text-secondary mt-2">Auto-detected: {autoDetectedLanguage}</p>}
+                      </div>
+                      <div className="border-t border-border-subtle pt-4">
+                        <h3 className="text-sm font-semibold text-text-primary">AI Response Language</h3>
+                        <p className="text-xs text-text-secondary mt-1">Choose the language Natively should use when generating answers.</p>
+                        <select
+                          value={aiResponseLanguage}
+                          onChange={(e) => {
+                            setAiResponseLanguage(e.target.value);
+                            void window.electronAPI?.setAiResponseLanguage?.(e.target.value);
+                          }}
+                          className="mt-3 w-full rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-sm text-text-primary"
+                        >
+                          {availableAiLanguages.map((language: any) => (
+                            <option key={language.code} value={language.code}>{language.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     {/* Speech Providers */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-bold">Speech Provider</h3>
