@@ -1,0 +1,40 @@
+name: Full Natively build audit
+
+on:
+  push:
+    branches:
+      - review/imported-source
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  renderer-and-electron-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies without platform-specific native rebuilds
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Build renderer and run its TypeScript check
+        run: npm run build
+
+      - name: Bundle Electron main, preload, and runtime modules
+        run: npm run build:electron
+
+      - name: Verify required runtime entry points
+        shell: bash
+        run: |
+          test -s dist/index.html
+          test -s dist-electron/electron/main.js
+          test -s dist-electron/electron/preload.js
