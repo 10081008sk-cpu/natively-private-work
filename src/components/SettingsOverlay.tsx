@@ -1241,6 +1241,8 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                                 const status = await window.electronAPI?.getCalendarStatus?.();
                                 setCalendarStatus(status || { connected: false });
                               } else if (result?.error) setCalendarStatus({ connected: false, email: result.error });
+                            } catch (error: any) {
+                              setCalendarStatus({ connected: false, email: error?.message || 'Calendar connection failed' });
                             } finally { setIsCalendarsLoading(false); }
                           }}
                           disabled={isCalendarsLoading}
