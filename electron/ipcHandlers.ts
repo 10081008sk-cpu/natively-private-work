@@ -4560,8 +4560,9 @@ export function initializeIpcHandlers(appState: AppState): void {
       const appRoot = app.getAppPath();
       const whisperRelativePath = path.join('node_modules', 'whisper-node', 'lib', 'whisper.cpp');
       const candidates = [
-        path.join(appRoot, whisperRelativePath),
+        // Prefer the physical unpacked path in packaged Electron builds.
         path.join(process.resourcesPath || '', 'app.asar.unpacked', whisperRelativePath),
+        path.join(appRoot, whisperRelativePath),
         path.join(__dirname, '..', whisperRelativePath),
       ];
       const whisperDir = candidates.find((candidate) => {
