@@ -727,16 +727,14 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
     setSttTestError('');
     try {
       const api: any = window.electronAPI;
-      const res = sttProvider === 'speechmatics'
-        ? await api?.testSpeechmaticsConnection?.(keyToTest.trim())
-        : await api?.testSttConnection?.(
-            sttProvider,
-            keyToTest.trim(),
-            sttProvider === 'azure' ? sttAzureRegion : undefined,
-            sttProvider === 'custom-stt'
-              ? { endpoint: customSttEndpoint, model: customSttModel, payloadType: customSttPayloadType, apiKeyHeader: customSttApiKeyHeader }
-              : undefined
-          );
+      const res = await api?.testSttConnection?.(
+        sttProvider,
+        keyToTest.trim(),
+        sttProvider === 'azure' ? sttAzureRegion : undefined,
+        sttProvider === 'custom-stt'
+          ? { endpoint: customSttEndpoint, model: customSttModel, payloadType: customSttPayloadType, apiKeyHeader: customSttApiKeyHeader }
+          : undefined
+      );
       if (res?.success) {
         setSttTestStatus('success');
         setTimeout(() => setSttTestStatus('idle'), 3000);
