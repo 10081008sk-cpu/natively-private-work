@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron"
 // Types for the exposed Electron API
 interface ElectronAPI {
   knowledgeBaseGetSettings: () => Promise<any>;
+  knowledgeBaseUpdateSettings: (settings: { enabled?: boolean; confidenceThreshold?: number }) => Promise<any>;
   knowledgeBaseAddDocument: (input: { name: string; dataBase64: string }) => Promise<{ success: boolean; file?: any; error?: string }>;
   knowledgeBaseRemoveDocument: (id: string) => Promise<{ success: boolean; error?: string }>;
   knowledgeBaseClear: () => Promise<{ success: boolean; error?: string }>;
@@ -576,6 +577,7 @@ try {
   analyzeImageFile: (path: string) => ipcRenderer.invoke("analyze-image-file", path),
   quitApp: () => ipcRenderer.invoke("quit-app"),
   knowledgeBaseGetSettings: () => ipcRenderer.invoke('knowledge-base:get-settings'),
+  knowledgeBaseUpdateSettings: (settings: { enabled?: boolean; confidenceThreshold?: number }) => ipcRenderer.invoke('knowledge-base:update-settings', settings),
   knowledgeBaseAddDocument: (input: { name: string; dataBase64: string }) => ipcRenderer.invoke('knowledge-base:add-document', input),
   knowledgeBaseRemoveDocument: (id: string) => ipcRenderer.invoke('knowledge-base:remove-document', id),
   knowledgeBaseClear: () => ipcRenderer.invoke('knowledge-base:clear'),
