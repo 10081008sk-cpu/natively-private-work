@@ -1274,7 +1274,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                           <div key={event.id} className="border-t border-border-subtle pt-3">
                             <div className="font-medium text-text-primary">{event.title}</div>
                             <div className="text-xs text-text-secondary mt-1">{event.startTime.includes('T') ? new Date(event.startTime).toLocaleString() : new Date(event.startTime).toLocaleDateString()} – {event.endTime.includes('T') ? new Date(event.endTime).toLocaleTimeString() : 'All day'}</div>
-                            {event.link && <button onClick={() => window.electronAPI?.openExternal?.(event.link)} className="text-xs text-blue-500 mt-1">Open event</button>}
+                            {event.link && <button onClick={() => window.electronAPI?.openExternal?.(event.link!)} className="text-xs text-blue-500 mt-1">Open event</button>}
                           </div>
                         )) : <p className="text-sm text-text-secondary">No upcoming events found.</p>}
                       </div>
