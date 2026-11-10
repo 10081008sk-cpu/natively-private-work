@@ -4551,20 +4551,45 @@ export function initializeIpcHandlers(appState: AppState): void {
 
   safeHandle("whisper-download-model", async (_, modelName: string) => {
     try {
+      const allowedModels = new Set(['tiny', 'tiny.en', 'base', 'base.en', 'small', 'small.en', 'medium', 'medium.en', 'large']);
+      if (!allowedModels.has(modelName)) {
+        return { success: false, error: 'Unsupported Whisper model selection' };
+      }
+
       const { execFile } = require('child_process');
-      const whisperDir = path.join(__dirname, '..', 'node_modules', 'whisper-node', 'lib', 'whisper.cpp');
-      const scriptPath = path.join(whisperDir, 'models', 'download-ggml-model.cmd');
+      const appRoot = app.getAppPath();
+      const whisperRelativePath = path.join('node_modules', 'whisper-node', 'lib', 'whisper.cpp');
+      const candidates = [
+        path.join(appRoot, whisperRelativePath),
+        path.join(process.resourcesPath || '', 'app.asar.unpacked', whisperRelativePath),
+        path.join(__dirname, '..', whisperRelativePath),
+      ];
+      const whisperDir = candidates.find((candidate) => {
+        const scriptName = process.platform === 'win32' ? 'download-ggml-model.cmd' : 'download-ggml-model.sh';
+        return fs.existsSync(path.join(candidate, 'models', scriptName));
+      });
+      if (!whisperDir) {
+        return { success: false, error: 'Whisper download script was not found in the installed app. Reinstall dependencies and try again.' };
+      }
+
+      const scriptName = process.platform === 'win32' ? 'download-ggml-model.cmd' : 'download-ggml-model.sh';
+      const scriptPath = path.join(whisperDir, 'models', scriptName);
       return await new Promise((resolve) => {
-        execFile(scriptPath, [modelName], { cwd: whisperDir, timeout: 300000 }, (err: any, stdout: string, stderr: string) => {
-          if (err) {
-            resolve({ success: false, error: err.message || stderr });
-          } else {
-            resolve({ success: true, output: stdout });
-          }
-        });
+        const callback = (err: any, stdout: string, stderr: string) => {
+          if (err) resolve({ success: false, error: err.message || stderr || 'Whisper model download failed' });
+          else resolve({ success: true, output: stdout });
+        };
+        if (process.platform === 'win32') {
+          // .cmd files must be launched through cmd.exe on Windows.
+          execFile(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `"${scriptPath}" ${modelName}`], {
+            cwd: whisperDir, timeout: 300000, windowsHide: true,
+          }, callback);
+        } else {
+          execFile(scriptPath, [modelName], { cwd: whisperDir, timeout: 300000 }, callback);
+        }
       });
     } catch (error: any) {
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || 'Whisper model download failed' };
     }
   });
 
