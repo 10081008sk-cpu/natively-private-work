@@ -59,7 +59,8 @@
       "**/*.node",
       "**/*.dylib",
       "node_modules/onnxruntime-node/**",
-      "node_modules/sherpa-onnx-*/**"
+      "node_modules/sherpa-onnx-*/**",
+      "node_modules/whisper-node/**"
     ],
     "directories": {
       "output": "release",
