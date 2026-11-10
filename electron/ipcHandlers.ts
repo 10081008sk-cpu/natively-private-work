@@ -2915,6 +2915,9 @@ export function initializeIpcHandlers(appState: AppState): void {
       // Add local reference material only when the user has explicitly enabled Knowledge Base.
       let promptInstruction = typeof options?.promptInstruction === 'string' ? options.promptInstruction : '';
       let knowledgeQuery = typeof question === 'string' ? question.trim() : '';
+      if (!knowledgeQuery && typeof options?.promptInstruction === 'string') {
+        knowledgeQuery = options.promptInstruction.trim();
+      }
       if (!knowledgeQuery) {
         try { knowledgeQuery = intelligenceManager.getDetectedCodingQuestion?.().question || ''; }
         catch { /* no detected coding question is available */ }
