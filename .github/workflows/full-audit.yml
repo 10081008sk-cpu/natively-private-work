@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
@@ -38,3 +40,22 @@ jobs:
           test -s dist/index.html
           test -s dist-electron/electron/main.js
           test -s dist-electron/electron/preload.js
+
+      - name: Package changed source files
+        shell: bash
+        run: |
+          git fetch origin main --depth=1
+          git diff --name-only origin/main...HEAD -- 'src/**' 'electron/**' 'scripts/**' 'vite.config.*' 'tsconfig*.json' |
+            while IFS= read -r file; do
+              if [ -f "$file" ]; then printf '%s\n' "$file"; fi
+            done > /tmp/changed-source-files.txt
+          test -s /tmp/changed-source-files.txt
+          zip -q natively-source-changes.zip -@ < /tmp/changed-source-files.txt
+
+      - name: Upload changed-source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: natively-changed-source
+          path: natively-source-changes.zip
+          if-no-files-found: error
+          retention-days: 14
