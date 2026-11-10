@@ -10,6 +10,8 @@ type KnowledgeDocument = {
 type KnowledgeStore = { enabled: boolean; confidenceThreshold: number; documents: KnowledgeDocument[] };
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const MAX_DOCUMENTS = 100;
+const MAX_TOTAL_CHUNKS = 5000;
 const ALLOWED_EXTENSIONS = new Set(['.txt', '.md', '.json', '.csv', '.pdf']);
 const DEFAULT_STORE: KnowledgeStore = { enabled: false, confidenceThreshold: 0.8, documents: [] };
 
@@ -149,6 +151,11 @@ export class KnowledgeBaseService {
       entriesCount: chunks.length, status: 'ready', lastIndexed: Date.now(), chunks,
     };
     const store = this.load();
+    if (store.documents.length >= MAX_DOCUMENTS) throw new Error(`Knowledge Base limit reached (maximum ${MAX_DOCUMENTS} files)`);
+    const existingChunks = store.documents.reduce((total, item) => total + item.chunks.length, 0);
+    if (existingChunks + chunks.length > MAX_TOTAL_CHUNKS) {
+      throw new Error(`Knowledge Base index limit reached (maximum ${MAX_TOTAL_CHUNKS} total chunks). Remove older files or split this document.`);
+    }
     store.documents.push(document);
     await this.save();
     return { id: document.id, name: document.name, size: document.size, type: document.type, entriesCount: document.entriesCount, status: 'ready', lastIndexed: document.lastIndexed };
