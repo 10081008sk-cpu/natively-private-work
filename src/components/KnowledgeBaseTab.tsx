@@ -280,6 +280,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
           id="file-upload"
           accept=".txt,.md,.json,.csv,.pdf"
           onChange={handleFileSelect}
+          disabled={isBusy}
           className="hidden"
         />
         <div className="text-center">
@@ -297,7 +298,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.pdf</code>
             (Max 10MB)
           </p>
-          <label htmlFor="file-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors">
+          <label htmlFor="file-upload" className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors ${isBusy ? 'opacity-60 pointer-events-none' : ''}`}>
             <FileText className="w-4 h-4" />
             {isBusy ? 'Indexing…' : 'Choose File'}
           </label>
