@@ -320,6 +320,7 @@ export interface ElectronAPI {
   // Audio Test
   startAudioTest: (deviceId?: string) => Promise<{ success: boolean }>;
   stopAudioTest: () => Promise<{ success: boolean }>;
+  whisperDownloadModel: (modelName: string) => Promise<{ success: boolean; output?: string; error?: string }>
   getOnlyInterviewerMode: () => Promise<{ enabled: boolean }>;
   setOnlyInterviewerMode: (enabled: boolean) => Promise<{ success: boolean }>;
   getNoiseCancellationEnabled: () => Promise<{ enabled: boolean }>;
