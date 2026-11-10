@@ -45,7 +45,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin main --depth=1
-          git diff --name-only origin/main...HEAD -- 'src/**' 'electron/**' 'scripts/**' 'vite.config.*' 'tsconfig*.json' |
+          git diff --name-only origin/main...HEAD -- 'src/**' 'electron/**' 'scripts/**' 'vite.config.*' 'tsconfig*.json' 'package.json' |
             while IFS= read -r file; do
               if [ -f "$file" ]; then printf '%s\n' "$file"; fi
             done > /tmp/changed-source-files.txt
