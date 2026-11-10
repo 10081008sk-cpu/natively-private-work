@@ -26,8 +26,20 @@ interface KnowledgeBaseTabProps {
 const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, onSettingsChange }) => {
   const [dragActive, setDragActive] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<KnowledgeBaseFile | null>(null);
-  const [activeTab, setActiveTab] = useState('knowledge-base');
+  const [isBusy, setIsBusy] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const api = (window as any).electronAPI;
+
+  useEffect(() => {
+    let cancelled = false;
+    api?.knowledgeBaseGetSettings?.().then((settings: any) => {
+      if (cancelled || !settings) return;
+      onSettingsChange?.({ enabled: !!settings.enabled, confidenceThreshold: settings.confidenceThreshold ?? 0.8, files: Array.isArray(settings.files) ? settings.files : [] });
+    }).catch((error: any) => {
+      if (!cancelled) setUploadError(error?.message || 'Could not load the local Knowledge Base.');
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -57,64 +69,64 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
   }, []);
 
   const handleFileUpload = async (file: File) => {
-    const allowedTypes = ['.txt', '.md', '.json', '.csv'];
+    const allowedTypes = ['.txt', '.md', '.json', '.csv', '.pdf'];
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-
+    setUploadError(null);
     if (!allowedTypes.includes(extension)) {
-      alert(`Unsupported file type: ${extension}. Allowed: ${allowedTypes.join(', ')}`);
+      setUploadError(`Unsupported file type: ${extension}. Allowed: ${allowedTypes.join(', ')}`);
+      return;
+    }
+    if (!file.size || file.size > 10 * 1024 * 1024) {
+      setUploadError('Choose a non-empty file up to 10 MB.');
+      return;
+    }
+    if (!api?.knowledgeBaseAddDocument) {
+      setUploadError('The desktop Knowledge Base service is unavailable. Restart the app after updating it.');
       return;
     }
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size exceeds 10MB limit');
-      return;
+    setIsBusy(true);
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      let binary = '';
+      const chunkSize = 0x8000;
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length)));
+      }
+      const result = await api.knowledgeBaseAddDocument({ name: file.name, dataBase64: btoa(binary) });
+      if (!result?.success || !result.file) throw new Error(result?.error || 'File indexing failed');
+      onSettingsChange?.({ files: [...(currentSettings?.files || []).filter(item => item.id !== result.file.id), result.file] });
+    } catch (error: any) {
+      setUploadError(error?.message || 'Unable to index this file.');
+    } finally {
+      setIsBusy(false);
     }
-
-    // Create new file entry
-    const newFile: KnowledgeBaseFile = {
-      id: `file-${Date.now()}`,
-      name: file.name,
-      size: file.size,
-      type: extension,
-      entriesCount: 0,
-      status: 'indexing',
-      lastIndexed: Date.now(),
-    };
-
-    // Update settings
-    onSettingsChange?.({
-      files: [...(currentSettings?.files || []), newFile],
-    });
-
-    // Simulate indexing (in real implementation, this would call the knowledge base parser)
-    setTimeout(() => {
-      const updatedFiles = (currentSettings?.files || []).map(f =>
-        f.id === newFile.id
-          ? { ...f, status: 'ready' as const, entriesCount: Math.floor(Math.random() * 50) + 10 }
-          : f
-      );
-      onSettingsChange?.({ files: updatedFiles });
-    }, 2000);
   };
 
-  const handleRemoveFile = (fileId: string) => {
-    const updatedFiles = (currentSettings?.files || []).filter(f => f.id !== fileId);
-    onSettingsChange?.({ files: updatedFiles });
+  const handleRemoveFile = async (fileId: string) => {
+    setUploadError(null);
+    const result = await api?.knowledgeBaseRemoveDocument?.(fileId);
+    if (!result?.success) { setUploadError(result?.error || 'Unable to remove this file.'); return; }
+    onSettingsChange?.({ files: (currentSettings?.files || []).filter(file => file.id !== fileId) });
   };
 
-  const handleClearAllFiles = () => {
+  const handleClearAllFiles = async () => {
     if (window.confirm('Are you sure you want to remove all knowledge base files? This action cannot be undone.')) {
+      const result = await api?.knowledgeBaseClear?.();
+      if (!result?.success) { setUploadError(result?.error || 'Unable to clear Knowledge Base.'); return; }
       onSettingsChange?.({ files: [] });
     }
   };
 
   const handleConfidenceChange = (value: number) => {
     onSettingsChange?.({ confidenceThreshold: value });
+    void api?.knowledgeBaseUpdateSettings?.({ confidenceThreshold: value });
   };
 
   const handleToggleEnabled = () => {
-    onSettingsChange?.({ enabled: !(currentSettings?.enabled || false) });
+    const enabled = !(currentSettings?.enabled || false);
+    onSettingsChange?.({ enabled });
+    void api?.knowledgeBaseUpdateSettings?.({ enabled });
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -182,7 +194,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-400">Current: {currentSettings?.confidenceThreshold.toFixed(2)}</span>
             <span className="text-sm font-medium text-white">
-              {(currentSettings?.confidenceThreshold || 0.75) * 100}%
+              {(currentSettings?.confidenceThreshold ?? 0.8) * 100}%
             </span>
           </div>
           <input
@@ -190,13 +202,13 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             min="0.50"
             max="0.95"
             step="0.01"
-            value={currentSettings?.confidenceThreshold || 0.75}
+            value={currentSettings?.confidenceThreshold ?? 0.8}
             onChange={e => handleConfidenceChange(parseFloat(e.target.value))}
             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>0.50 (Lenient)</span>
-            <span>0.75 (Default)</span>
+            <span>0.80 (Default)</span>
             <span>0.95 (Strict)</span>
           </div>
         </div>
@@ -266,7 +278,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
         <input
           type="file"
           id="file-upload"
-          accept=".txt,.md,.json,.csv"
+          accept=".txt,.md,.json,.csv,.pdf"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -281,15 +293,18 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             Supported formats: <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.txt</code>,
             <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.md</code>,
             <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.json</code>,
-            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.csv</code>
+            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.csv</code>,
+            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.pdf</code>
             (Max 10MB)
           </p>
           <label htmlFor="file-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors">
             <FileText className="w-4 h-4" />
-            Choose File
+            {isBusy ? 'Indexing…' : 'Choose File'}
           </label>
         </div>
       </div>
+
+      {uploadError && <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{uploadError}</div>}
 
       {/* Uploaded Files List */}
       {(currentSettings?.files.length || 0) > 0 && (
@@ -371,7 +386,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
           </div>
           <div className="text-center p-4 bg-gray-800/50 rounded-xl border border-gray-700">
             <div className="text-2xl font-bold text-yellow-400">
-              {(currentSettings?.confidenceThreshold || 0.75) * 100}%
+              {(currentSettings?.confidenceThreshold ?? 0.8) * 100}%
             </div>
             <div className="text-sm text-gray-400">Confidence Threshold</div>
           </div>
