@@ -31,6 +31,9 @@ jobs:
       - name: Build renderer and run its TypeScript check
         run: npm run build
 
+      - name: Type-check active Electron source
+        run: npm run typecheck:electron
+
       - name: Bundle Electron main, preload, and runtime modules
         run: npm run build:electron
 
