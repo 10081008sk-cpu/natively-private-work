@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from "electron"
 
 // Types for the exposed Electron API
 interface ElectronAPI {
+  knowledgeBaseGetSettings: () => Promise<any>;
+  knowledgeBaseAddDocument: (input: { name: string; dataBase64: string }) => Promise<{ success: boolean; file?: any; error?: string }>;
+  knowledgeBaseRemoveDocument: (id: string) => Promise<{ success: boolean; error?: string }>;
+  knowledgeBaseClear: () => Promise<{ success: boolean; error?: string }>;
+
   updateContentDimensions: (dimensions: {
     width: number
     height: number
@@ -570,6 +575,10 @@ try {
 
   analyzeImageFile: (path: string) => ipcRenderer.invoke("analyze-image-file", path),
   quitApp: () => ipcRenderer.invoke("quit-app"),
+  knowledgeBaseGetSettings: () => ipcRenderer.invoke('knowledge-base:get-settings'),
+  knowledgeBaseAddDocument: (input: { name: string; dataBase64: string }) => ipcRenderer.invoke('knowledge-base:add-document', input),
+  knowledgeBaseRemoveDocument: (id: string) => ipcRenderer.invoke('knowledge-base:remove-document', id),
+  knowledgeBaseClear: () => ipcRenderer.invoke('knowledge-base:clear'),
   toggleWindow: () => ipcRenderer.invoke("toggle-window"),
   showWindow: (inactive?: boolean) => ipcRenderer.invoke("show-window", inactive),
   hideWindow: () => ipcRenderer.invoke("hide-window"),
