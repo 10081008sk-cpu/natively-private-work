@@ -169,14 +169,14 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
   return (
     <div className="space-y-6">
       {/* Enable Toggle */}
-      <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-bg-card rounded-xl border border-border-subtle">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-600/20 rounded-lg">
             <CheckCircle className="w-5 h-5 text-green-400" />
           </div>
           <div>
-            <h3 className="font-medium text-white">Enable Instant Knowledge Base Intercept</h3>
-            <p className="text-sm text-gray-400">
+            <h3 className="font-medium text-text-primary">Enable Instant Knowledge Base Intercept</h3>
+            <p className="text-sm text-text-secondary">
               Add matching local references to interview answers and suggestions when enabled. Matching excerpts are included in the active AI request.
             </p>
           </div>
@@ -188,27 +188,27 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             onChange={handleToggleEnabled}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-bg-input peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
         </label>
       </div>
 
       {/* Confidence Threshold */}
-      <div className="p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+      <div className="p-4 bg-bg-card rounded-xl border border-border-subtle">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-yellow-600/20 rounded-lg">
             <SlidersHorizontal className="w-5 h-5 text-yellow-400" />
           </div>
           <div>
-            <h3 className="font-medium text-white">Local Knowledge Match Confidence Threshold</h3>
-            <p className="text-sm text-gray-400">
+            <h3 className="font-medium text-text-primary">Local Knowledge Match Confidence Threshold</h3>
+            <p className="text-sm text-text-secondary">
               Minimum keyword-match score (0.50 - 0.95) before local references are added to answers
             </p>
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Current: {(currentSettings?.confidenceThreshold ?? 0.8).toFixed(2)}</span>
-            <span className="text-sm font-medium text-white">
+            <span className="text-sm text-text-secondary">Current: {(currentSettings?.confidenceThreshold ?? 0.8).toFixed(2)}</span>
+            <span className="text-sm font-medium text-text-primary">
               {(currentSettings?.confidenceThreshold ?? 0.8) * 100}%
             </span>
           </div>
@@ -219,9 +219,9 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             step="0.01"
             value={currentSettings?.confidenceThreshold ?? 0.8}
             onChange={e => handleConfidenceChange(parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            className="w-full h-2 bg-bg-input rounded-lg appearance-none cursor-pointer accent-accent-primary"
           />
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-text-tertiary">
             <span>0.50 (Lenient)</span>
             <span>0.80 (Default)</span>
             <span>0.95 (Strict)</span>
@@ -230,10 +230,10 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
       </div>
 
       {/* Advanced Options */}
-      <div className="border-t border-gray-700 pt-4">
+      <div className="border-t border-border-subtle pt-4">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
         >
           <svg
             className={`w-5 h-5 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
@@ -247,18 +247,18 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
         </button>
 
         {showAdvanced && (
-          <div className="mt-4 space-y-3 p-4 bg-gray-800/50 rounded-xl border border-gray-700 text-sm">
+          <div className="mt-4 space-y-3 p-4 bg-bg-card rounded-xl border border-border-subtle text-sm">
             <div>
-              <h4 className="font-medium text-white mb-1">Local Indexing</h4>
-              <p className="text-gray-300">Documents are stored on this device. Text is split into paragraph-based chunks (up to 500 chunks per file).</p>
+              <h4 className="font-medium text-text-primary mb-1">Local Indexing</h4>
+              <p className="text-text-primary">Documents are stored on this device. Text is split into paragraph-based chunks (up to 500 chunks per file).</p>
             </div>
             <div>
-              <h4 className="font-medium text-white mb-1">Matching Method</h4>
-              <p className="text-gray-300">Lightweight keyword-overlap matching with basic plural normalization. This does not use embeddings or semantic vector search.</p>
+              <h4 className="font-medium text-text-primary mb-1">Matching Method</h4>
+              <p className="text-text-primary">Lightweight keyword-overlap matching with basic plural normalization. This does not use embeddings or semantic vector search.</p>
             </div>
             <div>
-              <h4 className="font-medium text-white mb-1">Limits</h4>
-              <p className="text-gray-300">Maximum file size: 10 MB. Supported: TXT, MD, JSON, CSV and text-based PDF.</p>
+              <h4 className="font-medium text-text-primary mb-1">Limits</h4>
+              <p className="text-text-primary">Maximum file size: 10 MB. Supported: TXT, MD, JSON, CSV and text-based PDF.</p>
             </div>
           </div>
         )}
@@ -266,7 +266,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
       {/* File Upload Zone */}
       <div
-        className={`border-2 border-dashed rounded-xl p-8 transition-colors ${dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 hover:border-gray-500'}`}
+        className={`border-2 border-dashed rounded-xl p-8 transition-colors ${dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-border-subtle hover:border-border-muted'}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -281,21 +281,21 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
           className="hidden"
         />
         <div className="text-center">
-          <div className="mx-auto mb-4 p-3 bg-gray-800/50 rounded-full w-16 h-16 flex items-center justify-center">
-            <Upload className="w-8 h-8 text-gray-400" />
+          <div className="mx-auto mb-4 p-3 bg-bg-card rounded-full w-16 h-16 flex items-center justify-center">
+            <Upload className="w-8 h-8 text-text-secondary" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">
+          <h3 className="text-lg font-medium text-text-primary mb-2">
             Drag & drop your knowledge file here, or click to browse
           </h3>
-          <p className="text-gray-400 mb-4">
-            Supported formats: <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.txt</code>,
-            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.md</code>,
-            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.json</code>,
-            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.csv</code>,
-            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">.pdf</code>
+          <p className="text-text-secondary mb-4">
+            Supported formats: <code className="bg-bg-input px-1.5 py-0.5 rounded text-xs">.txt</code>,
+            <code className="bg-bg-input px-1.5 py-0.5 rounded text-xs">.md</code>,
+            <code className="bg-bg-input px-1.5 py-0.5 rounded text-xs">.json</code>,
+            <code className="bg-bg-input px-1.5 py-0.5 rounded text-xs">.csv</code>,
+            <code className="bg-bg-input px-1.5 py-0.5 rounded text-xs">.pdf</code>
             (Max 10MB)
           </p>
-          <label htmlFor="file-upload" className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors ${isBusy ? 'opacity-60 pointer-events-none' : ''}`}>
+          <label htmlFor="file-upload" className={`inline-flex items-center gap-2 px-4 py-2 bg-accent-primary hover:opacity-90 text-text-primary rounded-lg cursor-pointer transition-colors ${isBusy ? 'opacity-60 pointer-events-none' : ''}`}>
             <FileText className="w-4 h-4" />
             {isBusy ? 'Indexing…' : 'Choose File'}
           </label>
@@ -308,7 +308,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
       {(currentSettings?.files.length || 0) > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-white">Uploaded Files ({currentSettings?.files.length || 0})</h3>
+            <h3 className="font-medium text-text-primary">Uploaded Files ({currentSettings?.files.length || 0})</h3>
             {(currentSettings?.files.length || 0) > 1 && (
               <button
                 onClick={handleClearAllFiles}
@@ -322,19 +322,19 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             {(currentSettings?.files || []).map(file => (
               <div
                 key={file.id}
-                className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700 group"
+                className="flex items-center gap-4 p-4 bg-bg-card rounded-xl border border-border-subtle group"
               >
-                <div className="p-2 bg-gray-700 rounded-lg">
-                  <FileText className="w-5 h-5 text-gray-400" />
+                <div className="p-2 bg-bg-input rounded-lg">
+                  <FileText className="w-5 h-5 text-text-secondary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-white truncate">{file.name}</span>
+                    <span className="font-medium text-text-primary truncate">{file.name}</span>
                     {file.status === 'error' && (
                       <span className="px-2 py-0.5 text-xs bg-red-500/20 text-red-300 rounded">Failed</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
+                  <div className="flex items-center gap-4 text-sm text-text-secondary mt-1">
                     <span>{formatFileSize(file.size)}</span>
                     <span>•</span>
                     <span>{file.entriesCount} entries</span>
@@ -346,7 +346,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
                   {getStatusIcon(file.status)}
                   <button
                     onClick={() => handleRemoveFile(file.id)}
-                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-text-secondary hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                     aria-label={`Remove ${file.name}`}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -360,10 +360,10 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
       {/* Empty State */}
       {(currentSettings?.files.length || 0) === 0 && (
-        <div className="text-center py-12 bg-gray-800/50 rounded-xl border border-gray-700">
-          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">No knowledge files uploaded yet</h3>
-          <p className="text-gray-400 max-w-md mx-auto">
+        <div className="text-center py-12 bg-bg-card rounded-xl border border-border-subtle">
+          <FileText className="w-12 h-12 text-text-tertiary mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-text-primary mb-2">No knowledge files uploaded yet</h3>
+          <p className="text-text-secondary max-w-md mx-auto">
             Upload your interview cheat sheets, FAQ documents, or technical references to enable instant answers during interviews.
           </p>
         </div>
@@ -371,22 +371,22 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
       {/* Stats Summary */}
       {(currentSettings?.files.length || 0) > 0 && (
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-700">
-          <div className="text-center p-4 bg-gray-800/50 rounded-xl border border-gray-700">
-            <div className="text-2xl font-bold text-blue-400">{currentSettings?.files.length || 0}</div>
-            <div className="text-sm text-gray-400">Files</div>
+        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border-subtle">
+          <div className="text-center p-4 bg-bg-card rounded-xl border border-border-subtle">
+            <div className="text-2xl font-bold text-accent-primary">{currentSettings?.files.length || 0}</div>
+            <div className="text-sm text-text-secondary">Files</div>
           </div>
-          <div className="text-center p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+          <div className="text-center p-4 bg-bg-card rounded-xl border border-border-subtle">
             <div className="text-2xl font-bold text-green-400">
               {(currentSettings?.files.reduce((sum, f) => sum + f.entriesCount, 0) || 0)}
             </div>
-            <div className="text-sm text-gray-400">Total Entries</div>
+            <div className="text-sm text-text-secondary">Total Entries</div>
           </div>
-          <div className="text-center p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+          <div className="text-center p-4 bg-bg-card rounded-xl border border-border-subtle">
             <div className="text-2xl font-bold text-yellow-400">
               {(currentSettings?.confidenceThreshold ?? 0.8) * 100}%
             </div>
-            <div className="text-sm text-gray-400">Confidence Threshold</div>
+            <div className="text-sm text-text-secondary">Confidence Threshold</div>
           </div>
         </div>
       )}
