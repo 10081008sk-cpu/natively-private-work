@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Trash2, SlidersHorizontal, Eye, EyeOff } from 'lucide-react';
 
 interface KnowledgeBaseFile {
@@ -28,6 +28,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const confidenceSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const api = (window as any).electronAPI;
 
   useEffect(() => {
@@ -38,7 +39,10 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
     }).catch((error: any) => {
       if (!cancelled) setUploadError(error?.message || 'Could not load the local Knowledge Base.');
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (confidenceSaveTimer.current) clearTimeout(confidenceSaveTimer.current);
+    };
   }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -120,7 +124,11 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
   const handleConfidenceChange = (value: number) => {
     onSettingsChange?.({ confidenceThreshold: value });
-    void api?.knowledgeBaseUpdateSettings?.({ confidenceThreshold: value });
+    if (confidenceSaveTimer.current) clearTimeout(confidenceSaveTimer.current);
+    confidenceSaveTimer.current = setTimeout(() => {
+      void api?.knowledgeBaseUpdateSettings?.({ confidenceThreshold: value });
+      confidenceSaveTimer.current = null;
+    }, 250);
   };
 
   const handleToggleEnabled = () => {
