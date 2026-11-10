@@ -122,16 +122,25 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
   const handleRemoveFile = async (fileId: string) => {
     setUploadError(null);
-    const result = await api?.knowledgeBaseRemoveDocument?.(fileId);
-    if (!result?.success) { setUploadError(result?.error || 'Unable to remove this file.'); return; }
-    onSettingsChange?.({ files: (currentSettings?.files || []).filter(file => file.id !== fileId) });
+    try {
+      const result = await api?.knowledgeBaseRemoveDocument?.(fileId);
+      if (!result?.success) { setUploadError(result?.error || 'Unable to remove this file.'); return; }
+      onSettingsChange?.({ files: (currentSettings?.files || []).filter(file => file.id !== fileId) });
+    } catch (error: any) {
+      setUploadError(error?.message || 'Unable to remove this file.');
+    }
   };
 
   const handleClearAllFiles = async () => {
     if (window.confirm('Are you sure you want to remove all knowledge base files? This action cannot be undone.')) {
-      const result = await api?.knowledgeBaseClear?.();
-      if (!result?.success) { setUploadError(result?.error || 'Unable to clear Knowledge Base.'); return; }
-      onSettingsChange?.({ files: [] });
+      setUploadError(null);
+      try {
+        const result = await api?.knowledgeBaseClear?.();
+        if (!result?.success) { setUploadError(result?.error || 'Unable to clear Knowledge Base.'); return; }
+        onSettingsChange?.({ files: [] });
+      } catch (error: any) {
+        setUploadError(error?.message || 'Unable to clear Knowledge Base.');
+      }
     }
   };
 
