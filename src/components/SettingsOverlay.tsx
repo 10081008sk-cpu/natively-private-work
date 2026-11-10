@@ -1403,7 +1403,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                           { id: 'soniox', label: 'Soniox', badge: storedKeysStatus.soniox ? 'Saved' : null, desc: 'Multilingual model', color: 'cyan', icon: <Mic size={14} /> },
                           { id: 'speechmatics', label: 'Speechmatics', badge: storedKeysStatus.speechmatics ? 'Saved' : null, desc: 'Realtime multilingual transcription', color: 'purple', icon: <Mic size={14} /> },
                           { id: 'local-whisper', label: 'Local Whisper', badge: null, desc: 'Device-local Whisper', color: 'green', icon: <Cpu size={14} /> },
-                          { id: 'sherpa', label: 'Sherpa-ONNX', badge: 'Local', desc: 'Offline Sherpa + Silero VAD', color: 'green', icon: <Cpu size={14} /> },
+                          { id: 'sherpa', label: 'Sherpa-ONNX', badge: 'Local', desc: 'Offline Sherpa + Silero VAD; Web Speech fallback if model is missing', color: 'green', icon: <Cpu size={14} /> },
                           { id: 'custom-stt', label: 'Custom STT', badge: hasStoredCustomSttKey ? 'Saved' : null, desc: 'Custom REST speech API', color: 'purple', icon: <Mic size={14} /> },
                         ]}
                       />
