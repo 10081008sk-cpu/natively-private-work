@@ -162,7 +162,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
           <div>
             <h3 className="font-medium text-white">Enable Instant Knowledge Base Intercept</h3>
             <p className="text-sm text-gray-400">
-              Add matching local references to interview answers and suggestions when enabled
+              Add matching local references to interview answers and suggestions when enabled. Matching excerpts are included in the active AI request.
             </p>
           </div>
         </div>
