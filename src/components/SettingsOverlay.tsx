@@ -1023,7 +1023,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                         <h3 className="text-sm font-bold text-text-primary">Meeting Interface Style</h3>
                         <p className="text-xs text-text-secondary mt-1">Choose the visual treatment used by the interview overlay.</p>
                       </div>
-                      <div className="relative">
+                      <div className="relative" ref={interfaceThemeDropdownRef}>
                         <button
                           onClick={() => setIsInterfaceThemeDropdownOpen(!isInterfaceThemeDropdownOpen)}
                           className="min-w-[130px] rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-xs text-text-primary flex items-center justify-between gap-2"
