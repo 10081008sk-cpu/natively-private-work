@@ -121,9 +121,10 @@ export class CredentialsManager {
         // New installations default to the lightweight offline Sherpa provider.
         // An explicit saved 'none' remains respected so users can intentionally disable STT.
         if (!storedProvider) {
-            this.credentials.sttProvider = 'sherpa';
+            const defaultProvider = this.credentials.nativelyApiKey ? 'natively' : 'sherpa';
+            this.credentials.sttProvider = defaultProvider;
             this.saveCredentials();
-            return 'sherpa';
+            return defaultProvider;
         }
         const provider = storedProvider;
         // Self-heal: if provider is 'none' but a Natively key exists, the user is in a
