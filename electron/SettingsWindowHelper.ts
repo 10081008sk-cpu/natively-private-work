@@ -133,8 +133,13 @@ export class SettingsWindowHelper {
 
         this.settingsWindow.webContents.on('render-process-gone', (_event, details) => {
           console.error('[SettingsWindowHelper] Renderer crashed:', details.reason);
-          if (details.reason !== 'clean-exit') {
-            this.settingsWindow.reload();
+          const settingsWindow = this.settingsWindow;
+          if (
+            details.reason !== 'clean-exit' &&
+            settingsWindow &&
+            !settingsWindow.isDestroyed()
+          ) {
+            settingsWindow.reload();
           }
         });
 
