@@ -255,7 +255,7 @@ export const AIProvidersSettings: React.FC = () => {
         setOllamaStatus('checking');
         try {
             // @ts-ignore
-            const result = await window.electronAPI?.invoke?.('ensure-ollama-running');
+            const result = await window.electronAPI?.ensureOllamaRunning?.();
             if (result && result.success) {
                 // It's running (or just started), now fetch models
                 checkOllama(true);
@@ -297,7 +297,7 @@ export const AIProvidersSettings: React.FC = () => {
         setOllamaStatus('fixing');
         try {
             // @ts-ignore
-            const result = await window.electronAPI?.invoke?.('force-restart-ollama');
+            const result = await window.electronAPI?.forceRestartOllama?.();
             if (result && result.success) {
                 setOllamaRestarted(true);
                 // Wait for server to be ready
