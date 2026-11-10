@@ -27,6 +27,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
   const [dragActive, setDragActive] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const confidenceSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingConfidence = useRef<number | null>(null);
@@ -34,12 +35,19 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
   useEffect(() => {
     let cancelled = false;
-    api?.knowledgeBaseGetSettings?.().then((settings: any) => {
-      if (cancelled || !settings) return;
-      onSettingsChange?.({ enabled: !!settings.enabled, confidenceThreshold: settings.confidenceThreshold ?? 0.8, files: Array.isArray(settings.files) ? settings.files : [] });
-    }).catch((error: any) => {
-      if (!cancelled) setUploadError(error?.message || 'Could not load the local Knowledge Base.');
-    });
+    if (!api?.knowledgeBaseGetSettings) {
+      setUploadError('The desktop Knowledge Base service is unavailable. Restart the app after updating it.');
+      setIsLoading(false);
+    } else {
+      api.knowledgeBaseGetSettings().then((settings: any) => {
+        if (cancelled || !settings) return;
+        onSettingsChange?.({ enabled: !!settings.enabled, confidenceThreshold: settings.confidenceThreshold ?? 0.8, files: Array.isArray(settings.files) ? settings.files : [] });
+      }).catch((error: any) => {
+        if (!cancelled) setUploadError(error?.message || 'Could not load the local Knowledge Base.');
+      }).finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    }
     return () => {
       cancelled = true;
       if (confidenceSaveTimer.current) clearTimeout(confidenceSaveTimer.current);
@@ -304,6 +312,10 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
       {uploadError && <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{uploadError}</div>}
 
+      {isLoading && (
+        <div className="py-8 text-center text-sm text-text-secondary">Loading local Knowledge Base…</div>
+      )}
+
       {/* Uploaded Files List */}
       {(currentSettings?.files.length || 0) > 0 && (
         <div className="space-y-3">
@@ -359,7 +371,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
       )}
 
       {/* Empty State */}
-      {(currentSettings?.files.length || 0) === 0 && (
+      {!isLoading && (currentSettings?.files.length || 0) === 0 && (
         <div className="text-center py-12 bg-bg-card rounded-xl border border-border-subtle">
           <FileText className="w-12 h-12 text-text-tertiary mx-auto mb-4" />
           <h3 className="text-lg font-medium text-text-primary mb-2">No knowledge files uploaded yet</h3>
