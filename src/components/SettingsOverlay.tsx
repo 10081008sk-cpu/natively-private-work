@@ -324,7 +324,7 @@ export interface SettingsOverlayProps {
   onSettingsChange?: (settings: Partial<KnowledgeBaseSettings>) => void;
 }
 
-type SttProviderType = 'none' | 'google' | 'groq' | 'openai' | 'deepgram' | 'elevenlabs' | 'azure' | 'ibmwatson' | 'soniox' | 'natively' | 'local-whisper' | 'custom-stt' | 'speechmatics' | 'sherpa';
+type SttProviderType = 'none' | 'google' | 'groq' | 'openai' | 'deepgram' | 'elevenlabs' | 'azure' | 'ibmwatson' | 'soniox' | 'natively' | 'local-whisper' | 'custom-stt' | 'sherpa';
 
 export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   isOpen,
@@ -396,7 +396,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   const [sttProvider, setSttProvider] = useState<SttProviderType>('sherpa');
   const [groqSttModel, setGroqSttModel] = useState('whisper-large-v3-turbo');
   const [sttKeys, setSttKeys] = useState<Record<string, string>>({
-    groq: '', openai: '', deepgram: '', elevenlabs: '', azure: '', ibmwatson: '', soniox: '', speechmatics: '',
+    groq: '', openai: '', deepgram: '', elevenlabs: '', azure: '', ibmwatson: '', soniox: '',
   });
   const [storedKeysStatus, setStoredKeysStatus] = useState<Record<string, boolean>>({});
   const [sttAzureRegion, setSttAzureRegion] = useState('eastus');
@@ -451,7 +451,15 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
       try {
         const creds = await api?.getStoredCredentials?.();
         if (!creds) return;
-        setSttProvider(creds.sttProvider || 'sherpa');
+        const configuredSttProvider = creds.sttProvider || 'sherpa';
+        if (configuredSttProvider === 'speechmatics') {
+          // The current main-process runtime has no Speechmatics streaming adapter.
+          // Migrate this legacy selection to the supported offline default.
+          setSttProvider('sherpa');
+          await api?.setSttProvider?.('sherpa');
+        } else {
+          setSttProvider(configuredSttProvider);
+        }
         if (creds.groqSttModel) setGroqSttModel(creds.groqSttModel);
         setGoogleServiceAccountPath(creds.googleServiceAccountPath || null);
         setHasNativelyKey(!!creds.hasNativelyKey);
@@ -473,7 +481,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
           azure: !!creds.hasAzureKey,
           ibmwatson: !!creds.hasIbmWatsonKey,
           soniox: !!creds.hasSonioxKey,
-          speechmatics: !!creds.hasSpeechmaticsKey,
         });
         setSttKeys({
           groq: creds.sttGroqKey || '',
@@ -483,7 +490,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
           azure: creds.sttAzureKey || '',
           ibmwatson: creds.sttIbmKey || '',
           soniox: creds.sttSonioxKey || '',
-          speechmatics: creds.sttSpeechmaticsKey || '',
         });
       } catch (err) {
         console.error('Failed to load STT credentials:', err);
@@ -657,9 +663,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
     setSttTestError('');
     try {
       const api: any = window.electronAPI;
-      const testResult = provider === 'speechmatics'
-        ? await api?.testSpeechmaticsConnection?.(key.trim())
-        : await api?.testSttConnection?.(provider, key.trim(), provider === 'azure' ? sttAzureRegion : undefined);
+      const testResult = await api?.testSttConnection?.(provider, key.trim(), provider === 'azure' ? sttAzureRegion : undefined);
       if (!testResult?.success) {
         setSttTestStatus('error');
         setSttTestError(testResult?.error || 'Validation failed. Key not saved.');
@@ -677,7 +681,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
         ibmwatson: 'setIbmWatsonApiKey',
         soniox: 'setSonioxApiKey',
         deepgram: 'setDeepgramApiKey',
-        speechmatics: 'setSpeechmaticsSttApiKey',
       };
       if (setterMap[provider] && api?.[setterMap[provider]]) {
         await api[setterMap[provider]](key.trim());
@@ -704,7 +707,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
       ibmwatson: 'setIbmWatsonApiKey',
       soniox: 'setSonioxApiKey',
       deepgram: 'setDeepgramApiKey',
-      speechmatics: 'setSpeechmaticsSttApiKey',
     };
     if (setterMap[provider] && api?.[setterMap[provider]]) {
       await api[setterMap[provider]]('');
@@ -1404,7 +1406,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                           { id: 'azure', label: 'Azure Speech', badge: storedKeysStatus.azure ? 'Saved' : null, desc: 'Cognitive Services', color: 'cyan', icon: <Mic size={14} /> },
                           { id: 'ibmwatson', label: 'IBM Watson', badge: storedKeysStatus.ibmwatson ? 'Saved' : null, desc: 'Cloud STT', color: 'indigo', icon: <Mic size={14} /> },
                           { id: 'soniox', label: 'Soniox', badge: storedKeysStatus.soniox ? 'Saved' : null, desc: 'Multilingual model', color: 'cyan', icon: <Mic size={14} /> },
-                          { id: 'speechmatics', label: 'Speechmatics', badge: storedKeysStatus.speechmatics ? 'Saved' : null, desc: 'Realtime multilingual transcription', color: 'purple', icon: <Mic size={14} /> },
                           { id: 'local-whisper', label: 'Local Whisper', badge: null, desc: 'Device-local Whisper', color: 'green', icon: <Cpu size={14} /> },
                           { id: 'sherpa', label: 'Sherpa-ONNX', badge: 'Local', desc: 'Offline Sherpa + Silero VAD; Web Speech fallback if model is missing', color: 'green', icon: <Cpu size={14} /> },
                           { id: 'custom-stt', label: 'Custom STT', badge: hasStoredCustomSttKey ? 'Saved' : null, desc: 'Custom REST speech API', color: 'purple', icon: <Mic size={14} /> },
@@ -1412,7 +1413,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                       />
 
                       {/* API Key Form for Key-based Providers */}
-                      {['groq', 'openai', 'deepgram', 'elevenlabs', 'azure', 'ibmwatson', 'soniox', 'speechmatics'].includes(sttProvider) && (
+                      {['groq', 'openai', 'deepgram', 'elevenlabs', 'azure', 'ibmwatson', 'soniox'].includes(sttProvider) && (
                         <div className="bg-bg-card rounded-xl border border-border-subtle p-4 space-y-3">
                           <label className="text-xs font-medium text-text-secondary capitalize">{sttProvider} API Key</label>
                           <div className="flex gap-2">
