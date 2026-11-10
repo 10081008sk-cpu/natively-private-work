@@ -348,7 +348,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   const [openOnLogin, setOpenOnLogin] = useState(false);
   const [themeMode, setThemeMode] = useState<'system' | 'light' | 'dark'>('system');
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
-  const [isAiLangDropdownOpen, setIsAiLangDropdownOpen] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'uptodate' | 'error'>('idle');
   const [meetingInterfaceTheme, setMeetingInterfaceThemeState] = useState<MeetingInterfaceTheme>(getMeetingInterfaceTheme);
   const [isInterfaceThemeDropdownOpen, setIsInterfaceThemeDropdownOpen] = useState(false);
@@ -426,7 +425,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   const [isCalendarRefreshing, setIsCalendarRefreshing] = useState(false);
 
   const themeDropdownRef = useRef<HTMLDivElement>(null);
-  const aiLangDropdownRef = useRef<HTMLDivElement>(null);
   const interfaceThemeDropdownRef = useRef<HTMLDivElement>(null);
 
   // Sync state with electron main process
@@ -568,7 +566,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
       if (themeDropdownRef.current && !themeDropdownRef.current.contains(e.target as Node)) setIsThemeDropdownOpen(false);
-      if (aiLangDropdownRef.current && !aiLangDropdownRef.current.contains(e.target as Node)) setIsAiLangDropdownOpen(false);
       if (interfaceThemeDropdownRef.current && !interfaceThemeDropdownRef.current.contains(e.target as Node)) setIsInterfaceThemeDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleOutside);
