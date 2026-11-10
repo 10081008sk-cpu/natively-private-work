@@ -936,13 +936,25 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                             const next = !verboseLogging;
                             setVerboseLogging(next);
                             window.electronAPI?.setVerboseLogging?.(next);
-                            if (next) setShowVerboseToast(true);
+                            if (next) {
+                              setShowVerboseToast(true);
+                              window.setTimeout(() => setShowVerboseToast(false), 4000);
+                            } else {
+                              setShowVerboseToast(false);
+                            }
                           }}
                           className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer ${verboseLogging ? 'bg-amber-500' : 'bg-bg-toggle-switch border border-border-muted'}`}
                         >
                           <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${verboseLogging ? 'translate-x-5' : 'translate-x-0'}`} />
                         </div>
                       </div>
+
+                      {showVerboseToast && (
+                        <div role="status" className="mx-4 mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between gap-3">
+                          <span>Verbose diagnostics are enabled. Detailed STT and pipeline information will be written to the app logs.</span>
+                          <button onClick={() => setShowVerboseToast(false)} aria-label="Dismiss logging notice">×</button>
+                        </div>
+                      )}
 
                       {/* Interviewer Transcript */}
                       <div className="flex items-center justify-between px-4 py-3">
