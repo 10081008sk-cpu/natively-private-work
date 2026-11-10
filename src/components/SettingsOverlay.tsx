@@ -1433,6 +1433,29 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                               </button>
                             )}
                           </div>
+                          {sttProvider === 'openai' && (
+                            <div className="border-t border-border-subtle pt-3 space-y-2">
+                              <label className="block text-xs font-medium text-text-secondary">OpenAI-compatible STT Base URL (optional)</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="url"
+                                  value={sttOpenaiBaseUrl}
+                                  onChange={(e) => setSttOpenaiBaseUrl(e.target.value)}
+                                  placeholder="https://your-server/v1"
+                                  className="min-w-0 flex-1 bg-bg-input border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary"
+                                />
+                                <button
+                                  onClick={async () => {
+                                    const result = await window.electronAPI?.setOpenAiSttBaseUrl?.(sttOpenaiBaseUrl.trim());
+                                    if (!result?.success) setSttTestError(result?.error || 'Could not save the custom endpoint');
+                                    else setSttTestError('');
+                                  }}
+                                  className="px-3 py-2 rounded-lg border border-border-subtle text-xs text-text-primary hover:bg-bg-input"
+                                >Save URL</button>
+                              </div>
+                              <p className="text-[11px] text-text-secondary">Leave blank to use the official OpenAI transcription endpoint. Useful for self-hosted OpenAI-compatible services such as Speaches.</p>
+                            </div>
+                          )}
                           <div className="flex items-center gap-3 pt-2">
                             <button onClick={handleTestSttConnection} className="text-xs bg-bg-input hover:bg-bg-elevated px-3 py-1.5 rounded border border-border-subtle">
                               Test Connection
@@ -1471,6 +1494,14 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                         </div>
                       )}
 
+                      {deviceFallbackNotice && (
+                        <div role="status" className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
+                          <div className="flex items-start justify-between gap-3">
+                            <span>{deviceFallbackNotice.kind === 'input' ? 'Microphone' : 'Output'} device selection fell back to {deviceFallbackNotice.actual || 'the system default'}{deviceFallbackNotice.reason ? `: ${deviceFallbackNotice.reason}` : '.'}</span>
+                            <button onClick={() => setDeviceFallbackNotice(null)} aria-label="Dismiss device notice">×</button>
+                          </div>
+                        </div>
+                      )}
                       {/* Devices Input/Output */}
                       <CustomSelect
                         label="Input Device"
