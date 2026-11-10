@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Bell, Rocket } from 'lucide-react';
-import mainui from "../UI_comp/mainui.png";
 
 // --- Types ---
 
@@ -118,11 +117,7 @@ export const FeatureSpotlight: React.FC = () => {
         >
             {/* 1. Background (Ambient) */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                <img
-                    src={mainui}
-                    alt=""
-                    className="w-full h-full object-cover scale-100 transition-transform duration-[700ms] ease-out group-hover:scale-110 opacity-85"
-                />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_20%,_rgba(139,92,246,0.38),_transparent_48%),radial-gradient(ellipse_at_15%_85%,_rgba(59,130,246,0.18),_transparent_52%)] transition-transform duration-[700ms] ease-out group-hover:scale-110" />
                 <div className="absolute inset-0 bg-black/20" />
             </div>
 
