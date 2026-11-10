@@ -74,6 +74,8 @@ export interface ElectronAPI {
   windowClose: () => Promise<void>
   windowIsMaximized: () => Promise<boolean>
 
+  getImagePreview: (path: string) => Promise<string>
+  stopLiveInterview: () => Promise<{ success: boolean }>
   analyzeImageFile: (path: string) => Promise<void>
   quitApp: () => Promise<void>
   knowledgeBaseGetSettings: () => Promise<{ enabled: boolean; confidenceThreshold: number; files: Array<{ id: string; name: string; size: number; type: string; entriesCount: number; status: 'ready'; lastIndexed: number }> }>
