@@ -35,6 +35,19 @@ import { ProfileIntelligenceSettings } from "./components/ProfileIntelligenceSet
 
 const queryClient = new QueryClient()
 
+type KnowledgeBaseSettingsState = {
+  enabled: boolean;
+  confidenceThreshold: number;
+  files: Array<{ id: string; name: string; size: number; type: string; entriesCount: number; status: 'indexing' | 'ready' | 'error'; lastIndexed: number; error?: string }>;
+};
+
+const KNOWLEDGE_BASE_SETTINGS_KEY = 'natively_knowledge_base_settings_v1';
+const DEFAULT_KNOWLEDGE_BASE_SETTINGS: KnowledgeBaseSettingsState = {
+  enabled: false,
+  confidenceThreshold: 0.8,
+  files: [],
+};
+
 const App: React.FC = () => {
   const isSettingsWindow = new URLSearchParams(window.location.search).get('window') === 'settings';
   const isLauncherWindow = new URLSearchParams(window.location.search).get('window') === 'launcher';
@@ -100,6 +113,22 @@ const App: React.FC = () => {
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<string>('general');
+  const [knowledgeBaseSettings, setKnowledgeBaseSettings] = useState<KnowledgeBaseSettingsState>(() => {
+    try {
+      const stored = localStorage.getItem(KNOWLEDGE_BASE_SETTINGS_KEY);
+      if (!stored) return DEFAULT_KNOWLEDGE_BASE_SETTINGS;
+      const parsed = JSON.parse(stored) as Partial<KnowledgeBaseSettingsState>;
+      return {
+        enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : DEFAULT_KNOWLEDGE_BASE_SETTINGS.enabled,
+        confidenceThreshold: typeof parsed.confidenceThreshold === 'number'
+          ? Math.min(0.95, Math.max(0.5, parsed.confidenceThreshold))
+          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.confidenceThreshold,
+        files: Array.isArray(parsed.files) ? parsed.files : [],
+      };
+    } catch {
+      return DEFAULT_KNOWLEDGE_BASE_SETTINGS;
+    }
+  });
   const [isModesOpen, setIsModesOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const openSettingsExclusive = useCallback((tab: string = 'general') => {
@@ -554,15 +583,18 @@ const App: React.FC = () => {
                     setIsSettingsOpen(false);
                   }}
                   initialTab={settingsInitialTab}
-                  onSettingsChange={async (settings) => {
-                    // Placeholder: will be integrated with actual settings logic
-                    console.log('Settings changed:', settings);
+                  onSettingsChange={(settings) => {
+                    setKnowledgeBaseSettings((previous) => {
+                      const next = { ...previous, ...settings };
+                      try {
+                        localStorage.setItem(KNOWLEDGE_BASE_SETTINGS_KEY, JSON.stringify(next));
+                      } catch (error) {
+                        console.warn('[KnowledgeBase] Could not persist settings:', error);
+                      }
+                      return next;
+                    });
                   }}
-                  currentSettings={{
-                    enabled: false,
-                    confidenceThreshold: 0.75,
-                    files: [],
-                  }}
+                  currentSettings={knowledgeBaseSettings}
                 />
                 <AnimatePresence>
                   {isModesOpen && (
