@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ToggleLeft, ToggleRight, Search, Calendar, ArrowRight, ArrowLeft, MoreHorizontal, Globe, Clock, ChevronRight, Settings, LayoutGrid, RefreshCw, Eye, EyeOff, Ghost, Plus, Mail, Link as LinkIcon, ChevronDown, Trash2, Bell, Check, Download, DownloadCloud, CheckCircle, AlertCircle, User, UserSearch } from 'lucide-react';
 import { generateMeetingPDF } from '../utils/pdfGenerator';
-import icon from "./icon.png";
-import mainui from "../UI_comp/mainui.png";
-import calender from "../UI_comp/calender.png";
 import ConnectCalendarButton from './ui/ConnectCalendarButton';
 import MeetingDetails from './MeetingDetails';
 import TopSearchPill from './TopSearchPill';
@@ -833,7 +830,7 @@ const Launcher: React.FC<LauncherProps> = ({ onStartMeeting, onOpenSettings, onO
                                                             transition={{ duration: 0.22, ease: 'easeOut' }}
                                                             className="flex items-center gap-3"
                                                         >
-                                                            <img src={icon} alt="Logo" className="w-[18px] h-[18px] object-contain brightness-0 invert drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)] opacity-90" />
+                                                            <span className="w-[18px] h-[18px] flex items-center justify-center rounded-md bg-white/15"><Calendar className="w-3.5 h-3.5 text-white" /></span>
                                                             <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)] text-[20px] leading-none">Start Natively</span>
                                                         </motion.div>
                                                     )}
@@ -856,11 +853,10 @@ const Launcher: React.FC<LauncherProps> = ({ onStartMeeting, onOpenSettings, onO
                                         <div className="md:col-span-1 rounded-xl overflow-hidden bg-bg-elevated relative group flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
                                             {/* Backdrop image with violet tint mask */}
                                             <div className="absolute inset-0">
-                                                <img
-                                                    src={calender}
-                                                    alt=""
-                                                    className="w-full h-full object-cover scale-105 translate-y-[1px]"
-                                                />
+                                                <div className="w-full h-full bg-gradient-to-br from-violet-950 via-indigo-900 to-slate-950" aria-hidden="true">
+                                                    <Calendar className="absolute right-5 top-5 h-28 w-28 text-violet-200/15" strokeWidth={1} />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-violet-300/10" />
+                                                </div>
                                                 {/* Violet tint mask — only when connected, washes the calendar image into the brand purple */}
                                                 {isCalendarConnected && (
                                                     <>
