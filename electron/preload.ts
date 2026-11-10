@@ -54,6 +54,8 @@ interface ElectronAPI {
   windowClose: () => Promise<void>
   windowIsMaximized: () => Promise<boolean>
 
+  getImagePreview: (path: string) => Promise<string>;
+  stopLiveInterview: () => Promise<{ success: boolean }>;
   analyzeImageFile: (path: string) => Promise<void>
   quitApp: () => Promise<void>
 
@@ -580,6 +582,8 @@ try {
   windowClose: () => ipcRenderer.invoke("window-close"),
   windowIsMaximized: () => ipcRenderer.invoke("window-is-maximized"),
 
+  getImagePreview: (path: string) => ipcRenderer.invoke('get-image-preview', path),
+  stopLiveInterview: () => ipcRenderer.invoke('stop-live-interview'),
   analyzeImageFile: (path: string) => ipcRenderer.invoke("analyze-image-file", path),
   quitApp: () => ipcRenderer.invoke("quit-app"),
   knowledgeBaseGetSettings: () => ipcRenderer.invoke('knowledge-base:get-settings'),
