@@ -1108,6 +1108,7 @@ export class AppState {
         const fallback = this._safeGoogleSTT(speaker, 'No Natively API Key');
         if (!fallback) return null;
         stt = fallback;
+        effectiveSttProvider = 'google';
       } else {
         // 'system' for interviewer (system audio), 'mic' for user (microphone).
         // The server uses ${key}:${channel} as the session key so both streams
@@ -1123,6 +1124,7 @@ export class AppState {
         const fallback = this._safeGoogleSTT(speaker, 'No Deepgram API key');
         if (!fallback) return null;
         stt = fallback;
+        effectiveSttProvider = 'google';
       }
     } else if (sttProvider === 'soniox') {
       const apiKey = CredentialsManager.getInstance().getSonioxApiKey();
@@ -1133,6 +1135,7 @@ export class AppState {
         const fallback = this._safeGoogleSTT(speaker, 'No Soniox API key');
         if (!fallback) return null;
         stt = fallback;
+        effectiveSttProvider = 'google';
       }
     } else if (sttProvider === 'elevenlabs') {
       const apiKey = CredentialsManager.getInstance().getElevenLabsApiKey();
@@ -1143,6 +1146,7 @@ export class AppState {
         const fallback = this._safeGoogleSTT(speaker, 'No ElevenLabs API key');
         if (!fallback) return null;
         stt = fallback;
+        effectiveSttProvider = 'google';
       }
     } else if (sttProvider === 'openai') {
       // OpenAI: WebSocket Realtime (gpt-4o-transcribe → gpt-4o-mini-transcribe) with whisper-1 REST fallback.
@@ -1157,6 +1161,7 @@ export class AppState {
         const fallback = this._safeGoogleSTT(speaker, 'No OpenAI API key');
         if (!fallback) return null;
         stt = fallback;
+        effectiveSttProvider = 'google';
       }
     } else if (sttProvider === 'groq' || sttProvider === 'azure' || sttProvider === 'ibmwatson' || sttProvider === 'custom-stt') {
       let apiKey: string | undefined;
@@ -1185,6 +1190,7 @@ export class AppState {
       } else {
         console.warn(`[Main] No API key configured for ${sttProvider} — falling back to WebSpeechSTT for ${speaker}.`);
         stt = new WebSpeechSTT(`main_${speaker}`);
+        effectiveSttProvider = 'web-speech';
       }
     } else if (sttProvider === 'sherpa') {
       // Fully-offline Sherpa-ONNX (Silero VAD + multilingual Whisper int8).
@@ -1223,6 +1229,7 @@ export class AppState {
       const fallback = this._safeGoogleSTT(speaker, `Unknown provider "${sttProvider}"`);
       if (!fallback) return null;
       stt = fallback;
+        effectiveSttProvider = 'google';
     }
 
     stt.setRecognitionLanguage(sttLanguage);
