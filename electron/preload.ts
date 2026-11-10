@@ -215,6 +215,12 @@ interface ElectronAPI {
   // Audio Test
   startAudioTest: (deviceId?: string) => Promise<{ success: boolean }>
   stopAudioTest: () => Promise<{ success: boolean }>
+  getOnlyInterviewerMode: () => Promise<{ enabled: boolean }>;
+  setOnlyInterviewerMode: (enabled: boolean) => Promise<{ success: boolean }>;
+  getNoiseCancellationEnabled: () => Promise<{ enabled: boolean }>;
+  setNoiseCancellationEnabled: (enabled: boolean) => Promise<{ success: boolean }>;
+  getMockInterviewMode: () => Promise<{ enabled: boolean }>;
+  setMockInterviewMode: (enabled: boolean) => Promise<{ success: boolean }>;
   onAudioTestLevel: (callback: (level: number) => void) => () => void
 
   // Database
@@ -1086,6 +1092,12 @@ try {
   // Audio Test
   startAudioTest: (deviceId?: string) => ipcRenderer.invoke('start-audio-test', deviceId),
   stopAudioTest: () => ipcRenderer.invoke('stop-audio-test'),
+  getOnlyInterviewerMode: () => ipcRenderer.invoke('get-only-interviewer-mode'),
+  setOnlyInterviewerMode: (enabled: boolean) => ipcRenderer.invoke('set-only-interviewer-mode', enabled),
+  getNoiseCancellationEnabled: () => ipcRenderer.invoke('get-noise-cancellation-enabled'),
+  setNoiseCancellationEnabled: (enabled: boolean) => ipcRenderer.invoke('set-noise-cancellation-enabled', enabled),
+  getMockInterviewMode: () => ipcRenderer.invoke('get-mock-interview-mode'),
+  setMockInterviewMode: (enabled: boolean) => ipcRenderer.invoke('set-mock-interview-mode', enabled),
   onAudioTestLevel: (callback: (level: number) => void) => {
     const subscription = (_: any, level: number) => callback(level)
     ipcRenderer.on('audio-test-level', subscription)
