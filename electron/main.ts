@@ -1100,6 +1100,7 @@ export class AppState {
     }
 
     let stt: STTProvider;
+    let effectiveSttProvider = sttProvider;
 
     if (sttProvider === 'natively') {
       const nativelyKey = CredentialsManager.getInstance().getNativelyApiKey();
@@ -1196,6 +1197,7 @@ export class AppState {
         // Keep audio usable on machines where the native addon/model is missing.
         console.warn(`[Main] Sherpa STT unavailable for ${speaker}; falling back to Web Speech:`, error?.message || error);
         stt = new WebSpeechSTT(`main_${speaker}`);
+        effectiveSttProvider = 'web-speech';
       }
     } else if (sttProvider === 'local-whisper') {
       const { LocalWhisperSTT } = require('./audio/LocalWhisperSTT');
@@ -1318,7 +1320,7 @@ export class AppState {
         _lastState = 'failed';
         this.broadcast('stt-status', {
           state: 'failed',
-          provider: sttProvider,
+          provider: effectiveSttProvider,
           error: errorMessage,
           channel: speaker,
         } as SttStatusPayload);
