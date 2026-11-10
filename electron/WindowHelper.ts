@@ -284,8 +284,9 @@ export class WindowHelper {
 
     this.launcherWindow.webContents.on('render-process-gone', (_event, details) => {
       console.error('[WindowHelper:launcher] Renderer process crashed/gone:', details.reason, details.exitCode);
-      if (details.reason !== 'clean-exit') {
-        this.launcherWindow.reload();
+      const launcherWindow = this.launcherWindow;
+      if (details.reason !== 'clean-exit' && launcherWindow && !launcherWindow.isDestroyed()) {
+        launcherWindow.reload();
       }
     });
 
@@ -363,8 +364,9 @@ export class WindowHelper {
 
     this.overlayWindow.webContents.on('render-process-gone', (_event, details) => {
       console.error('[WindowHelper:overlay] Renderer process crashed/gone:', details.reason, details.exitCode);
-      if (details.reason !== 'clean-exit') {
-        this.overlayWindow.reload();
+      const overlayWindow = this.overlayWindow;
+      if (details.reason !== 'clean-exit' && overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.reload();
       }
     });
 
@@ -423,8 +425,9 @@ export class WindowHelper {
     // Handle renderer process crashes for overlay
     this.overlayWindow.webContents.on('render-process-gone', (_event, details) => {
       console.error('[WindowHelper:overlay] Renderer crashed:', details.reason);
-      if (details.reason !== 'clean-exit') {
-        this.overlayWindow.reload();
+      const overlayWindow = this.overlayWindow;
+      if (details.reason !== 'clean-exit' && overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.reload();
       }
     });
 
