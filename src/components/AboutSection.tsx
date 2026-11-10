@@ -3,7 +3,6 @@ import {
     Github, Twitter, Shield, Cpu, Database,
     Heart, Linkedin, Instagram, Mail, MicOff, Star, Bug, Globe, Sparkles, Zap, Camera, LayoutGrid, User, Volume2, Activity, MessageSquare, Link, Smartphone, Calendar, ListTodo, Users, WifiOff
 } from 'lucide-react';
-import evinProfile from '../assets/evin.png';
 import { useResolvedTheme } from '../hooks/useResolvedTheme';
 import { getPlatformShortcut } from '../utils/platformUtils';
 
@@ -230,7 +229,7 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
                         <div className="flex flex-col gap-4">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center overflow-hidden shrink-0">
-                                    <img src={evinProfile} alt="Evin John" className="w-full h-full object-cover" />
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-500/25 to-indigo-500/25 text-2xl font-semibold text-text-primary" aria-label="Evin John">EJ</div>
                                 </div>
                                 <div className="pt-0.5">
                                     <div className="flex items-center gap-2 mb-1">
