@@ -14,9 +14,19 @@ const ALLOWED_EXTENSIONS = new Set(['.txt', '.md', '.json', '.csv', '.pdf']);
 const DEFAULT_STORE: KnowledgeStore = { enabled: false, confidenceThreshold: 0.8, documents: [] };
 
 function tokenize(value: string): string[] {
-  return (value.toLowerCase().match(/[a-z0-9+#.-]{2,}/g) || []).filter((term) => !STOP_WORDS.has(term));
+  return (value.toLowerCase().match(/[a-z0-9+#.-]{2,}/g) || [])
+    .map((term) => term.endsWith('ies') && term.length > 5
+      ? term.slice(0, -3) + 'y'
+      : term.endsWith('s') && !term.endsWith('ss') && term.length > 4 ? term.slice(0, -1) : term)
+    .filter((term) => !STOP_WORDS.has(term));
 }
-const STOP_WORDS = new Set(['the','and','for','that','with','this','from','you','are','was','were','have','has','had','what','when','where','how','why','can','will','would','could','should','into','your','about','then','than','there','their','them','they','our','not','but','use']);
+const STOP_WORDS = new Set([
+  'the','and','for','that','with','this','from','you','are','was','were','have','has','had',
+  'what','when','where','how','why','can','will','would','could','should','into','your','about',
+  'then','than','there','their','them','they','our','not','but','use','is','it','of','in','on',
+  'to','do','does','explain','describe','give','example','examples','difference','between','please',
+  'tell','me','show','compare','vs','using','used','useful','also','like','such','which','who'
+]);
 
 function splitIntoChunks(text: string): string[] {
   const normalized = text.replace(/\r\n?/g, '\n').replace(/[\t ]+/g, ' ').trim();
