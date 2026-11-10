@@ -2640,7 +2640,7 @@ export function initializeIpcHandlers(appState: AppState): void {
   });
 
   safeHandle("stop-audio-test", async () => {
-    appState.stopAudioTest;
+    appState.stopAudioTest();
     return { success: true };
   });
 
