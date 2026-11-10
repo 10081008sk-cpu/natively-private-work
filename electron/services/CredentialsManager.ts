@@ -127,6 +127,13 @@ export class CredentialsManager {
             return defaultProvider;
         }
         const provider = storedProvider;
+        // Older builds stored Speechmatics credentials but never shipped a streaming
+        // provider adapter. Migrate that unsupported selection to offline Sherpa.
+        if (provider === 'speechmatics') {
+            this.credentials.sttProvider = 'sherpa';
+            this.saveCredentials();
+            return 'sherpa';
+        }
         // Self-heal: if provider is 'none' but a Natively key exists, the user is in a
         // broken state (key cleared then re-entered via a path that skipped auto-promote,
         // or credentials restored from backup). Silently restore to 'natively' so STT works.
