@@ -4574,4 +4574,24 @@ export function initializeIpcHandlers(appState: AppState): void {
     NativePipelineManager.getInstance().shutdown();
     return { success: true };
   });
+
+  // Local Knowledge Base: documents remain on this device in the app userData folder.
+  const knowledgeBase = require('./services/KnowledgeBaseService').KnowledgeBaseService.getInstance();
+  safeHandle('knowledge-base:get-settings', async () => knowledgeBase.getSettings());
+  safeHandle('knowledge-base:add-document', async (_event, input: { name: string; dataBase64: string }) => {
+    try {
+      const file = await knowledgeBase.addDocument(input);
+      return { success: true, file };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Unable to index this file' };
+    }
+  });
+  safeHandle('knowledge-base:remove-document', async (_event, id: string) => {
+    try { knowledgeBase.removeDocument(id); return { success: true }; }
+    catch (error: any) { return { success: false, error: error?.message || 'Unable to remove file' }; }
+  });
+  safeHandle('knowledge-base:clear', async () => {
+    try { knowledgeBase.clear(); return { success: true }; }
+    catch (error: any) { return { success: false, error: error?.message || 'Unable to clear Knowledge Base' }; }
+  });
 }
