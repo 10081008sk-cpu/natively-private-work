@@ -217,6 +217,7 @@ interface ElectronAPI {
   // Audio Test
   startAudioTest: (deviceId?: string) => Promise<{ success: boolean }>
   stopAudioTest: () => Promise<{ success: boolean }>
+  whisperDownloadModel: (modelName: string) => Promise<{ success: boolean; output?: string; error?: string }>
   getOnlyInterviewerMode: () => Promise<{ enabled: boolean }>;
   setOnlyInterviewerMode: (enabled: boolean) => Promise<{ success: boolean }>;
   getNoiseCancellationEnabled: () => Promise<{ enabled: boolean }>;
@@ -1096,6 +1097,7 @@ try {
   // Audio Test
   startAudioTest: (deviceId?: string) => ipcRenderer.invoke('start-audio-test', deviceId),
   stopAudioTest: () => ipcRenderer.invoke('stop-audio-test'),
+  whisperDownloadModel: (modelName: string) => ipcRenderer.invoke('whisper-download-model', modelName),
   getOnlyInterviewerMode: () => ipcRenderer.invoke('get-only-interviewer-mode'),
   setOnlyInterviewerMode: (enabled: boolean) => ipcRenderer.invoke('set-only-interviewer-mode', enabled),
   getNoiseCancellationEnabled: () => ipcRenderer.invoke('get-noise-cancellation-enabled'),
