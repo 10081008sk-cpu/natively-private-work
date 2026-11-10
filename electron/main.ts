@@ -1187,11 +1187,16 @@ export class AppState {
       }
     } else if (sttProvider === 'sherpa') {
       // Fully-offline Sherpa-ONNX (Silero VAD + multilingual Whisper int8).
-      // Lazy require so the native addon + ~150 MB model are only loaded when
-      // the user has actually selected this provider.
-      const { SherpaSTT: SherpaSTTProvider } = require('./audio/SherpaSTT');
-      console.log(`[Main] Using SherpaSTT adapter (Sherpa-ONNX + Silero VAD) for ${speaker}`);
-      stt = new SherpaSTTProvider(speaker === 'interviewer' ? 'system' : 'mic');
+      // Lazy require so the native addon + model are loaded only when selected.
+      try {
+        const { SherpaSTT: SherpaSTTProvider } = require('./audio/SherpaSTT');
+        stt = new SherpaSTTProvider(speaker === 'interviewer' ? 'system' : 'mic');
+        console.log(`[Main] Using SherpaSTT adapter (Sherpa-ONNX + Silero VAD) for ${speaker}`);
+      } catch (error: any) {
+        // Keep audio usable on machines where the native addon/model is missing.
+        console.warn(`[Main] Sherpa STT unavailable for ${speaker}; falling back to Web Speech:`, error?.message || error);
+        stt = new WebSpeechSTT(`main_${speaker}`);
+      }
     } else if (sttProvider === 'local-whisper') {
       const { LocalWhisperSTT } = require('./audio/LocalWhisperSTT');
       const sm = SettingsManager.getInstance();
