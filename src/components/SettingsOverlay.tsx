@@ -807,6 +807,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                       { id: 'natively-pro', label: 'Natively Pro', icon: <NativelyLogoMark size={16} /> },
                       { id: 'ai-providers', label: 'AI Providers', icon: <FlaskConical size={16} /> },
                       { id: 'knowledge', label: 'Knowledge Base', icon: <CheckCircle size={16} /> },
+                      { id: 'calendar', label: 'Calendar', icon: <Calendar size={16} /> },
                       { id: 'audio', label: 'Audio', icon: <Mic size={16} /> },
                       { id: 'keybinds', label: 'Keybinds', icon: <Keyboard size={16} /> },
                       { id: 'code-execution', label: 'Code Execution', icon: <Terminal size={16} /> },
@@ -1032,6 +1033,77 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                 {activeTab === 'natively-api' && <NativelyApiSettings />}
                 {activeTab === 'natively-pro' && <NativelyProSettings />}
                 {activeTab === 'knowledge' && <KnowledgeBaseTab currentSettings={currentSettings} onSettingsChange={onSettingsChange} />}
+
+                {activeTab === 'calendar' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-text-primary">Calendar</h2>
+                      <p className="text-sm text-text-secondary mt-1">Connect Google Calendar to see your upcoming meetings inside Natively.</p>
+                    </div>
+                    <div className="rounded-xl border border-border-subtle bg-bg-card p-5 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-text-primary">Google Calendar</div>
+                        <div className="text-sm text-text-secondary mt-1">
+                          {calendarStatus.connected ? `Connected${calendarStatus.email ? ` as ${calendarStatus.email}` : ''}` : 'Not connected'}
+                        </div>
+                      </div>
+                      {calendarStatus.connected ? (
+                        <button
+                          onClick={async () => {
+                            setIsCalendarsLoading(true);
+                            try {
+                              const result = await window.electronAPI?.calendarDisconnect?.();
+                              if (result?.success) { setCalendarStatus({ connected: false }); setCalendarEvents([]); }
+                            } finally { setIsCalendarsLoading(false); }
+                          }}
+                          disabled={isCalendarsLoading}
+                          className="px-4 py-2 rounded-lg border border-border-subtle text-sm text-text-primary hover:bg-bg-item-active disabled:opacity-50"
+                        >Disconnect</button>
+                      ) : (
+                        <button
+                          onClick={async () => {
+                            setIsCalendarsLoading(true);
+                            try {
+                              const result = await window.electronAPI?.calendarConnect?.();
+                              if (result?.success) {
+                                const status = await window.electronAPI?.getCalendarStatus?.();
+                                setCalendarStatus(status || { connected: false });
+                              } else if (result?.error) setCalendarStatus({ connected: false, email: result.error });
+                            } finally { setIsCalendarsLoading(false); }
+                          }}
+                          disabled={isCalendarsLoading}
+                          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm disabled:opacity-50"
+                        >{isCalendarsLoading ? 'Connecting…' : 'Connect Google Calendar'}</button>
+                      )}
+                    </div>
+                    {calendarStatus.connected && (
+                      <div className="rounded-xl border border-border-subtle bg-bg-card p-5 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-text-primary">Upcoming Events</h3>
+                          <button
+                            onClick={async () => {
+                              setIsCalendarRefreshing(true);
+                              try {
+                                await window.electronAPI?.calendarRefresh?.();
+                                const events = await window.electronAPI?.getUpcomingEvents?.();
+                                setCalendarEvents(events || []);
+                              } finally { setIsCalendarRefreshing(false); }
+                            }}
+                            disabled={isCalendarRefreshing}
+                            className="text-sm text-blue-500 hover:text-blue-400 disabled:opacity-50"
+                          >{isCalendarRefreshing ? 'Refreshing…' : 'Refresh'}</button>
+                        </div>
+                        {calendarEvents.length ? calendarEvents.map(event => (
+                          <div key={event.id} className="border-t border-border-subtle pt-3">
+                            <div className="font-medium text-text-primary">{event.title}</div>
+                            <div className="text-xs text-text-secondary mt-1">{new Date(event.startTime).toLocaleString()} – {new Date(event.endTime).toLocaleTimeString()}</div>
+                            {event.link && <button onClick={() => window.electronAPI?.openExternal?.(event.link)} className="text-xs text-blue-500 mt-1">Open event</button>}
+                          </div>
+                        )) : <p className="text-sm text-text-secondary">No upcoming events found.</p>}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {activeTab === 'keybinds' && (
                   <div className="space-y-5">
