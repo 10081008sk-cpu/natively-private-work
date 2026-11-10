@@ -318,6 +318,12 @@ export interface ElectronAPI {
   // Audio Test
   startAudioTest: (deviceId?: string) => Promise<{ success: boolean }>;
   stopAudioTest: () => Promise<{ success: boolean }>;
+  getOnlyInterviewerMode: () => Promise<{ enabled: boolean }>;
+  setOnlyInterviewerMode: (enabled: boolean) => Promise<{ success: boolean }>;
+  getNoiseCancellationEnabled: () => Promise<{ enabled: boolean }>;
+  setNoiseCancellationEnabled: (enabled: boolean) => Promise<{ success: boolean }>;
+  getMockInterviewMode: () => Promise<{ enabled: boolean }>;
+  setMockInterviewMode: (enabled: boolean) => Promise<{ success: boolean }>;
   onAudioTestLevel: (callback: (level: number) => void) => () => void;
 
   // Database
