@@ -1008,6 +1008,40 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                       </div>
                     </div>
 
+                    <div className={`rounded-xl border p-4 flex items-center justify-between gap-4 ${isLight ? 'bg-bg-card border-border-subtle' : 'bg-bg-item-surface border-border-subtle'}`}>
+                      <div>
+                        <h3 className="text-sm font-bold text-text-primary">Meeting Interface Style</h3>
+                        <p className="text-xs text-text-secondary mt-1">Choose the visual treatment used by the interview overlay.</p>
+                      </div>
+                      <div className="relative">
+                        <button
+                          onClick={() => setIsInterfaceThemeDropdownOpen(!isInterfaceThemeDropdownOpen)}
+                          className="min-w-[130px] rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-xs text-text-primary flex items-center justify-between gap-2"
+                        >
+                          {meetingInterfaceTheme === 'liquid-glass' ? 'Liquid Glass' : 'Classic'}
+                          <ChevronDown size={12} />
+                        </button>
+                        {isInterfaceThemeDropdownOpen && (
+                          <div className="absolute right-0 top-full mt-1 z-30 w-36 rounded-lg border border-border-subtle bg-bg-elevated p-1 shadow-xl">
+                            {([
+                              ['default', 'Classic'],
+                              ['liquid-glass', 'Liquid Glass'],
+                            ] as const).map(([value, label]) => (
+                              <button
+                                key={value}
+                                onClick={() => {
+                                  setMeetingInterfaceThemeState(value);
+                                  setMeetingInterfaceTheme(value);
+                                  setIsInterfaceThemeDropdownOpen(false);
+                                }}
+                                className="w-full rounded px-2 py-1.5 text-left text-xs text-text-primary hover:bg-bg-item-active"
+                              >{label}</button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Restore the existing disguise, privacy, vision and retention controls. */}
                     <div className={`rounded-xl border p-5 space-y-5 ${isLight ? 'bg-bg-card border-border-subtle' : 'bg-bg-item-surface border-border-subtle'}`}>
                       <div>
