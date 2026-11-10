@@ -119,7 +119,7 @@ export class CredentialsManager {
     public getSttProvider(): 'none' | 'google' | 'groq' | 'openai' | 'deepgram' | 'elevenlabs' | 'azure' | 'ibmwatson' | 'soniox' | 'speechmatics' | 'natively' | 'local-whisper' | 'sherpa' {
         const storedProvider = this.credentials.sttProvider;
         // New installations default to the lightweight offline Sherpa provider.
-        // An explicit saved 'none' remains respected so users can intentionally disable STT.
+        // A saved 'none' is kept unless a Natively API key is present (handled by the existing self-heal below).
         if (!storedProvider) {
             const defaultProvider = this.credentials.nativelyApiKey ? 'natively' : 'sherpa';
             this.credentials.sttProvider = defaultProvider;
