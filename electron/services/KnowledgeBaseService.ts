@@ -33,14 +33,29 @@ function splitIntoChunks(text: string): string[] {
   if (!normalized) return [];
   const paragraphs = normalized.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
   const chunks: string[] = [];
+  let current = '';
+
+  const pushCurrent = () => {
+    if (current.trim()) chunks.push(current.trim());
+    current = '';
+  };
+
   for (const paragraph of paragraphs.length ? paragraphs : [normalized]) {
-    if (paragraph.length <= 1200) { chunks.push(paragraph); continue; }
-    for (let offset = 0; offset < paragraph.length; offset += 1000) {
-      const piece = paragraph.slice(offset, offset + 1200).trim();
-      if (piece) chunks.push(piece);
+    if (paragraph.length > 1200) {
+      pushCurrent();
+      for (let offset = 0; offset < paragraph.length; offset += 1000) {
+        const piece = paragraph.slice(offset, offset + 1200).trim();
+        if (piece) chunks.push(piece);
+      }
+      continue;
     }
+
+    if (current && current.length + paragraph.length + 2 > 1200) pushCurrent();
+    current = current ? current + '\n\n' + paragraph : paragraph;
   }
-  return chunks.slice(0, 500);
+
+  pushCurrent();
+  return chunks;
 }
 
 export class KnowledgeBaseService {
@@ -123,7 +138,9 @@ export class KnowledgeBaseService {
       }
     }
 
+    if (text.length > 500_000) throw new Error('This document contains too much extracted text. Split it into smaller files (maximum 500,000 characters per file).');
     const parts = splitIntoChunks(text);
+    if (parts.length > 500) throw new Error('This document creates too many index chunks. Split it into smaller files (maximum 500 chunks per file).');
     if (!parts.length) throw new Error('No readable text was found in this file');
     const id = `kb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const chunks = parts.map((part, index) => ({ id: `${id}-${index}`, text: part, terms: tokenize(part) }));
