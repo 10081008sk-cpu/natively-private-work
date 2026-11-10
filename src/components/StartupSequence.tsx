@@ -1,12 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import logoAsset from '../assets/logo.png';
-import celebFont from '../font/Masterfont - Celeb MF Medium.otf?url';
-import celebLightFont from '../font/Masterfont - Celeb MF Light.otf?url';
-import interFont from '../font/Inter-4.1/web/Inter-Medium.woff2?url';
-import interLightFont from '../font/Inter-4.1/web/Inter-Light.woff2?url';
 
-import heroVideo from '../assets/hero.webm';
 import NativelyInterfaceCard from './NativelyInterfaceCard';
 
 interface StartupSequenceProps {
@@ -96,30 +90,6 @@ const StartupSequence: React.FC<StartupSequenceProps> = ({ onComplete }) => {
             style={{ fontFamily: "'Inter', sans-serif", backgroundColor: '#f3f3f4', color: '#2f2f34' }}
         >
             <style>{`
-                @font-face {
-                    font-family: 'Celeb MF Medium';
-                    src: url('${celebFont}') format('opentype');
-                    font-weight: 500;
-                    font-style: normal;
-                }
-                @font-face {
-                    font-family: 'Celeb MF Light';
-                    src: url('${celebLightFont}') format('opentype');
-                    font-weight: 300;
-                    font-style: normal;
-                }
-                @font-face {
-                    font-family: 'Inter Medium';
-                    src: url('${interFont}') format('woff2');
-                    font-weight: 500;
-                    font-style: normal;
-                }
-                @font-face {
-                    font-family: 'Inter Light';
-                    src: url('${interLightFont}') format('woff2');
-                    font-weight: 300;
-                    font-style: normal;
-                }
                 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans:wght@500;600&display=swap');
                 * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
             `}</style>
@@ -238,22 +208,22 @@ const StartupSequence: React.FC<StartupSequenceProps> = ({ onComplete }) => {
                         <NativelyInterfaceCard isStatic={true} isMobile={false} spreadHotkeys />
                     </motion.div>
 
-                    {/* B. Hero Video — slightly narrower, below; negative margin to overlap under card */}
+                    {/* B. Lightweight static hero panel. The original video asset is not present in this source branch. */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15, duration: 1, ease: springEase }}
-                        className="w-[92%] rounded-[14px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.18)] ring-1 ring-black/5 -mt-[160px]"
+                        className="w-[92%] rounded-[14px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.18)] ring-1 ring-black/5 -mt-[160px] bg-gradient-to-br from-[#17152f] via-[#29245c] to-[#5143a0] relative"
                         style={{ aspectRatio: '16/9', zIndex: 1 }}
+                        aria-hidden="true"
                     >
-                        <video
-                            src={heroVideo}
-                            autoPlay
-                            muted
-                            loop
-                            playsInline
-                            className="w-full h-full object-cover bg-black"
-                        />
+                        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_70%_20%,_#b8a8ff_0%,_transparent_45%)]" />
+                        <div className="absolute inset-x-10 bottom-10 flex items-end justify-center gap-1.5 h-16">
+                            {Array.from({ length: 36 }, (_, index) => (
+                                <span key={index} className="w-1.5 rounded-full bg-violet-200/70" style={{ height: `${18 + ((index * 17) % 43)}%` }} />
+                            ))}
+                        </div>
+                        <div className="absolute top-5 left-6 text-xs tracking-[0.25em] uppercase text-violet-100/70">Natively · Live assistance</div>
                     </motion.div>
 
                 </div>
