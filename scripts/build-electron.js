@@ -71,7 +71,7 @@ build({
   platform: 'node',
   target: 'node20',
   format: 'cjs',
-  external: ['electron', 'sharp','better-sqlite3', 'keytar', 'sqlite-vec', 'onnxruntime-node', 'sherpa-onnx-node', '*.node'],
+  external: ['electron', 'sharp', 'better-sqlite3', 'keytar', 'sqlite-vec', 'onnxruntime-node', 'sherpa-onnx-node', 'pdf-parse', '*.node'],
   sourcemap: true,
   jsx: 'automatic',
   loader: {
