@@ -29,6 +29,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
   const [isBusy, setIsBusy] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const confidenceSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingConfidence = useRef<number | null>(null);
   const api = (window as any).electronAPI;
 
   useEffect(() => {
@@ -42,6 +43,10 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
     return () => {
       cancelled = true;
       if (confidenceSaveTimer.current) clearTimeout(confidenceSaveTimer.current);
+      if (pendingConfidence.current !== null) {
+        void api?.knowledgeBaseUpdateSettings?.({ confidenceThreshold: pendingConfidence.current });
+        pendingConfidence.current = null;
+      }
     };
   }, []);
 
@@ -124,9 +129,11 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
 
   const handleConfidenceChange = (value: number) => {
     onSettingsChange?.({ confidenceThreshold: value });
+    pendingConfidence.current = value;
     if (confidenceSaveTimer.current) clearTimeout(confidenceSaveTimer.current);
     confidenceSaveTimer.current = setTimeout(() => {
       void api?.knowledgeBaseUpdateSettings?.({ confidenceThreshold: value });
+      pendingConfidence.current = null;
       confidenceSaveTimer.current = null;
     }, 250);
   };
