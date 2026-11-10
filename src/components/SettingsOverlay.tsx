@@ -72,7 +72,6 @@ import {
 } from '../lib/overlayAppearance';
 import { getMeetingInterfaceTheme, setMeetingInterfaceTheme, type MeetingInterfaceTheme } from '../lib/meetingInterfaceTheme';
 import { KeyRecorder } from './ui/KeyRecorder';
-import icon from './icon.png';
 import KnowledgeBaseTab from './KnowledgeBaseTab';
 
 // ---------------------------------------------------------------------------
@@ -88,7 +87,7 @@ const MockupNativelyInterface = ({ opacity }: { opacity: number }) => {
         <div className="flex justify-center mb-2 select-none z-50">
           <div className="flex items-center gap-2 rounded-full overlay-pill-surface backdrop-blur-md pl-1.5 pr-1.5 py-1.5" style={appearance.pillStyle}>
             <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden overlay-icon-surface" style={appearance.iconStyle}>
-              <img src={icon} alt="Natively" className="w-[24px] h-[24px] object-contain opacity-95 scale-105 force-black-icon" draggable="false" />
+              <NativelyLogoMark size={24} className="opacity-95" />
             </div>
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-medium border overlay-chip-surface overlay-text-interactive" style={appearance.chipStyle}>
               <ChevronUp className="w-3.5 h-3.5 opacity-70" />
