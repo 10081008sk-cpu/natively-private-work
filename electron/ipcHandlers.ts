@@ -2907,10 +2907,15 @@ export function initializeIpcHandlers(appState: AppState): void {
       const intelligenceManager = appState.getIntelligenceManager();
       // Add local reference material only when the user has explicitly enabled Knowledge Base.
       let promptInstruction = typeof options?.promptInstruction === 'string' ? options.promptInstruction : '';
-      if (question?.trim()) {
+      let knowledgeQuery = typeof question === 'string' ? question.trim() : '';
+      if (!knowledgeQuery) {
+        try { knowledgeQuery = intelligenceManager.getDetectedCodingQuestion?.().question || ''; }
+        catch { /* no detected coding question is available */ }
+      }
+      if (knowledgeQuery) {
         try {
           const knowledgeMatches = require('./services/KnowledgeBaseService').KnowledgeBaseService
-            .getInstance().search(question, 5);
+            .getInstance().search(knowledgeQuery, 5);
           if (knowledgeMatches.length) {
             const referenceText = knowledgeMatches
               .map((match: { text: string; source: string; confidence: number }, index: number) =>
