@@ -76,6 +76,11 @@ export interface ElectronAPI {
 
   analyzeImageFile: (path: string) => Promise<void>
   quitApp: () => Promise<void>
+  knowledgeBaseGetSettings: () => Promise<{ enabled: boolean; confidenceThreshold: number; files: Array<{ id: string; name: string; size: number; type: string; entriesCount: number; status: 'ready'; lastIndexed: number }> }>
+  knowledgeBaseUpdateSettings: (settings: { enabled?: boolean; confidenceThreshold?: number }) => Promise<{ success: boolean; error?: string }>
+  knowledgeBaseAddDocument: (input: { name: string; dataBase64: string }) => Promise<{ success: boolean; file?: { id: string; name: string; size: number; type: string; entriesCount: number; status: 'ready'; lastIndexed: number }; error?: string }>
+  knowledgeBaseRemoveDocument: (id: string) => Promise<{ success: boolean; error?: string }>
+  knowledgeBaseClear: () => Promise<{ success: boolean; error?: string }>
   toggleWindow: () => Promise<void>
   showWindow: (inactive?: boolean) => Promise<void>
   hideWindow: () => Promise<void>
