@@ -296,15 +296,10 @@ export const AIProvidersSettings: React.FC = () => {
     const handleFixOllama = async () => {
         setOllamaStatus('fixing');
         try {
-            // @ts-ignore
-            const result = await window.electronAPI?.forceRestartOllama?.();
-            if (result && result.success) {
-                setOllamaRestarted(true);
-                // Wait for server to be ready
-                setTimeout(() => checkOllama(false), 2000);
-            } else {
-                setOllamaStatus('not-found');
-            }
+            await window.electronAPI?.forceRestartOllama?.();
+            setOllamaRestarted(true);
+            // Wait for server to be ready
+            setTimeout(() => checkOllama(false), 2000);
         } catch (e) {
             console.error("Fix failed", e);
             setOllamaStatus('not-found');
