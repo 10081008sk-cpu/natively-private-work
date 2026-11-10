@@ -111,8 +111,7 @@ const SettingsPopup = () => {
         // Apply Groq Text Mode
         localStorage.setItem('natively_groq_fast_text', String(useGroqFastText));
         try {
-            // @ts-ignore - electronAPI not typed in this file yet
-            window.electronAPI?.invoke('set-groq-fast-text-mode', useGroqFastText);
+            window.electronAPI?.setGroqFastTextMode?.(useGroqFastText);
         } catch (e) {
             console.error(e);
         }
