@@ -441,6 +441,9 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
     api?.getOpenAtLogin?.().then(setOpenOnLogin).catch(() => {});
     api?.getThemeMode?.().then(({ mode }: any) => setThemeMode(mode)).catch(() => {});
     api?.getCalendarStatus?.().then(setCalendarStatus).catch(() => {});
+    api?.getOnlyInterviewerMode?.().then((value: any) => setOnlyInterviewerMode(!!value?.enabled)).catch(() => {});
+    api?.getNoiseCancellationEnabled?.().then((value: any) => setNoiseCancellationEnabled(!!value?.enabled)).catch(() => {});
+    api?.getMockInterviewMode?.().then((value: any) => setMockInterviewMode(!!value?.enabled)).catch(() => {});
     api?.getTechnicalInterviewVisionFirst?.().then(setTechnicalInterviewVisionFirst)
       .catch(() => api?.getTechnicalInterviewDirectVision?.().then(setTechnicalInterviewVisionFirst).catch(() => {}));
 
