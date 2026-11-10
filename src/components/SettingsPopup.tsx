@@ -101,7 +101,7 @@ const SettingsPopup = () => {
             // Ensure backend is synced on mount (even if no change)
             try {
                 // @ts-ignore
-                window.electronAPI?.invoke('set-groq-fast-text-mode', useGroqFastText);
+                window.electronAPI?.setGroqFastTextMode?.(useGroqFastText);
             } catch (e) {
                 console.error(e);
             }
