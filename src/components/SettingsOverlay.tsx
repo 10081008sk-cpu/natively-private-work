@@ -999,6 +999,125 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                       </div>
                     </div>
 
+                    {/* Restore the existing disguise, privacy, vision and retention controls. */}
+                    <div className={`rounded-xl border p-5 space-y-5 ${isLight ? 'bg-bg-card border-border-subtle' : 'bg-bg-item-surface border-border-subtle'}`}>
+                      <div>
+                        <h3 className="text-sm font-bold text-text-primary">Disguise Mode</h3>
+                        <p className="text-xs text-text-secondary mt-1">Choose the window identity used by Natively.</p>
+                        <select
+                          value={disguiseMode}
+                          onChange={(e) => {
+                            const mode = e.target.value as 'terminal' | 'settings' | 'activity' | 'none';
+                            setDisguiseMode(mode);
+                            void window.electronAPI?.setDisguise?.(mode);
+                          }}
+                          className="mt-3 w-full rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-sm text-text-primary"
+                        >
+                          <option value="none">No disguise</option>
+                          <option value="terminal">Terminal</option>
+                          <option value="settings">System Settings</option>
+                          <option value="activity">Activity Monitor</option>
+                        </select>
+                      </div>
+                      <div className="border-t border-border-subtle pt-4">
+                        <h3 className="text-sm font-bold text-text-primary">Screen Understanding</h3>
+                        <p className="text-xs text-text-secondary mt-1">Control how screenshots are routed to vision providers.</p>
+                        <select
+                          value={screenUnderstandingMode}
+                          onChange={(e) => {
+                            const mode = e.target.value as 'vision_first' | 'vision_only' | 'private_vision';
+                            setScreenUnderstandingMode(mode);
+                            void window.electronAPI?.setScreenUnderstandingMode?.(mode);
+                          }}
+                          className="mt-3 w-full rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-sm text-text-primary"
+                        >
+                          <option value="vision_first">Vision First — use available vision providers</option>
+                          <option value="vision_only">Vision Only — require a vision-capable provider</option>
+                          <option value="private_vision">Private Vision — local providers only</option>
+                        </select>
+                        <label className="mt-3 flex items-center gap-2 text-sm text-text-primary">
+                          <input
+                            type="checkbox"
+                            checked={technicalInterviewVisionFirst}
+                            onChange={(e) => {
+                              const enabled = e.target.checked;
+                              setTechnicalInterviewVisionFirst(enabled);
+                              void window.electronAPI?.setTechnicalInterviewVisionFirst?.(enabled);
+                            }}
+                            className="accent-blue-500"
+                          />
+                          Prefer direct vision for technical interviews
+                        </label>
+                      </div>
+                      <div className="border-t border-border-subtle pt-4">
+                        <h3 className="text-sm font-bold text-text-primary">Meeting Data Retention</h3>
+                        <p className="text-xs text-text-secondary mt-1">Choose how long meeting transcripts and related data are retained.</p>
+                        <select
+                          value={meetingRetention}
+                          onChange={(e) => {
+                            const retention = e.target.value as 'forever' | '7d' | '30d' | 'never';
+                            setMeetingRetention(retention);
+                            void window.electronAPI?.setMeetingRetention?.(retention);
+                          }}
+                          className="mt-3 w-full rounded-lg border border-border-subtle bg-bg-input px-3 py-2 text-sm text-text-primary"
+                        >
+                          <option value="forever">Keep forever</option>
+                          <option value="7d">Delete after 7 days</option>
+                          <option value="30d">Delete after 30 days</option>
+                          <option value="never">Do not retain meeting transcripts</option>
+                        </select>
+                      </div>
+                      <div className="border-t border-border-subtle pt-4">
+                        <h3 className="text-sm font-bold text-text-primary">Overlay Behavior</h3>
+                        <label className="mt-3 flex items-center gap-2 text-sm text-text-primary">
+                          <input
+                            type="checkbox"
+                            checked={autoScroll}
+                            onChange={(e) => {
+                              const enabled = e.target.checked;
+                              setAutoScroll(enabled);
+                              localStorage.setItem('natively_auto_scroll', String(enabled));
+                              window.dispatchEvent(new Event('storage'));
+                            }}
+                            className="accent-blue-500"
+                          />
+                          Automatically scroll to the latest answer
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className={`rounded-xl border p-5 ${isLight ? 'bg-bg-card border-border-subtle' : 'bg-bg-item-surface border-border-subtle'}`}>
+                      <h3 className="text-sm font-bold text-text-primary">Provider Data Scopes</h3>
+                      <p className="text-xs text-text-secondary mt-1 mb-4">Choose which local data categories may be included in provider requests.</p>
+                      <div className="space-y-3">
+                        {([
+                          ['transcript', 'Interview transcript', 'Share transcript context with the active provider'],
+                          ['screenshots', 'Screenshots', 'Allow screenshots to be sent to vision providers'],
+                          ['reference_files', 'Reference files', 'Allow uploaded reference documents in provider context'],
+                          ['profile_history', 'Profile history', 'Allow profile and interview history in requests'],
+                          ['embeddings', 'Embeddings', 'Allow embedding providers to process local text chunks'],
+                          ['post_call_summary', 'Post-call summary', 'Allow meeting summaries to be used as context'],
+                        ] as const).map(([key, label, description]) => (
+                          <label key={key} className="flex items-start gap-3 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={providerDataScopes[key] !== false}
+                              onChange={(e) => {
+                                const next = { ...providerDataScopes, [key]: e.target.checked };
+                                setProviderDataScopes(next);
+                                void window.electronAPI?.setProviderDataScopes?.(next);
+                              }}
+                              className="mt-0.5 accent-blue-500"
+                            />
+                            <span className="min-w-0">
+                              <span className="block text-text-primary font-medium">{label}</span>
+                              <span className="block text-xs text-text-secondary mt-0.5">{description}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Opacity Slider */}
                     <div id="opacity-slider-card" className={`${isLight ? 'bg-bg-card' : 'bg-bg-item-surface'} rounded-xl p-5 border border-border-subtle`}>
                       <div className="flex items-center justify-between mb-3">
