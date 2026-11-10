@@ -321,6 +321,8 @@ export interface ElectronAPI {
   startAudioTest: (deviceId?: string) => Promise<{ success: boolean }>;
   stopAudioTest: () => Promise<{ success: boolean }>;
   whisperDownloadModel: (modelName: string) => Promise<{ success: boolean; output?: string; error?: string }>
+  ensureOllamaRunning: () => Promise<any>
+  forceRestartOllama: () => Promise<any>
   getOnlyInterviewerMode: () => Promise<{ enabled: boolean }>;
   setOnlyInterviewerMode: (enabled: boolean) => Promise<{ success: boolean }>;
   getNoiseCancellationEnabled: () => Promise<{ enabled: boolean }>;
