@@ -275,7 +275,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             </div>
             <div>
               <h4 className="font-medium text-text-primary mb-1">Limits</h4>
-              <p className="text-text-primary">Maximum file size: 10 MB. Supported: TXT, MD, JSON, CSV and text-based PDF.</p>
+              <p className="text-text-primary">Maximum file size: 10 MB and 500,000 extracted text characters per file. Supported: TXT, MD, JSON, CSV and text-based PDF.</p>
             </div>
           </div>
         )}
