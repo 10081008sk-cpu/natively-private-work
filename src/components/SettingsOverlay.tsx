@@ -1248,6 +1248,9 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
                         >{isCalendarsLoading ? 'Connecting…' : 'Connect Google Calendar'}</button>
                       )}
                     </div>
+                    {!calendarStatus.connected && calendarStatus.email && (
+                      <p role="alert" className="text-xs text-red-500">{calendarStatus.email}</p>
+                    )}
                     {calendarStatus.connected && (
                       <div className="rounded-xl border border-border-subtle bg-bg-card p-5 space-y-3">
                         <div className="flex items-center justify-between">
