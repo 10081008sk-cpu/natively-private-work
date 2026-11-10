@@ -386,7 +386,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   const [selectedInput, setSelectedInput] = useState('');
   const [selectedOutput, setSelectedOutput] = useState('');
   const [micLevel, setMicLevel] = useState(0);
-  const [useExperimentalSck, setUseExperimentalSck] = useState(false);
   const [deviceFallbackNotice, setDeviceFallbackNotice] = useState<{ kind: 'input' | 'output'; requested: string | null; actual: string | null; reason?: string } | null>(null);
 
   const [onlyInterviewerMode, setOnlyInterviewerMode] = useState(false);
@@ -510,7 +509,6 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
       else if (outputs.length > 0 && !selectedOutput) setSelectedOutput(outputs[0].id);
     });
 
-    setUseExperimentalSck(localStorage.getItem('useExperimentalSckBackend') === 'true');
   }, [isOpen]);
 
   // IPC Event listeners
