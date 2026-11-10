@@ -394,7 +394,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
   const [noiseCancellationEnabled, setNoiseCancellationEnabled] = useState(false);
   const [mockInterviewMode, setMockInterviewMode] = useState(false);
 
-  const [sttProvider, setSttProvider] = useState<SttProviderType>('none');
+  const [sttProvider, setSttProvider] = useState<SttProviderType>('sherpa');
   const [groqSttModel, setGroqSttModel] = useState('whisper-large-v3-turbo');
   const [sttKeys, setSttKeys] = useState<Record<string, string>>({
     groq: '', openai: '', deepgram: '', elevenlabs: '', azure: '', ibmwatson: '', soniox: '', speechmatics: '',
@@ -450,7 +450,7 @@ export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
       try {
         const creds = await api?.getStoredCredentials?.();
         if (!creds) return;
-        setSttProvider(creds.sttProvider || 'none');
+        setSttProvider(creds.sttProvider || 'sherpa');
         if (creds.groqSttModel) setGroqSttModel(creds.groqSttModel);
         setGoogleServiceAccountPath(creds.googleServiceAccountPath || null);
         setHasNativelyKey(!!creds.hasNativelyKey);
