@@ -117,7 +117,15 @@ export class CredentialsManager {
     }
 
     public getSttProvider(): 'none' | 'google' | 'groq' | 'openai' | 'deepgram' | 'elevenlabs' | 'azure' | 'ibmwatson' | 'soniox' | 'speechmatics' | 'natively' | 'local-whisper' | 'sherpa' {
-        const provider = this.credentials.sttProvider || 'none';
+        const storedProvider = this.credentials.sttProvider;
+        // New installations default to the lightweight offline Sherpa provider.
+        // An explicit saved 'none' remains respected so users can intentionally disable STT.
+        if (!storedProvider) {
+            this.credentials.sttProvider = 'sherpa';
+            this.saveCredentials();
+            return 'sherpa';
+        }
+        const provider = storedProvider;
         // Self-heal: if provider is 'none' but a Natively key exists, the user is in a
         // broken state (key cleared then re-entered via a path that skipped auto-promote,
         // or credentials restored from backup). Silently restore to 'natively' so STT works.
