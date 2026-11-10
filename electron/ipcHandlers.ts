@@ -4637,7 +4637,7 @@ export function initializeIpcHandlers(appState: AppState): void {
   const knowledgeBase = require('./services/KnowledgeBaseService').KnowledgeBaseService.getInstance();
   safeHandle('knowledge-base:get-settings', async () => knowledgeBase.getSettings());
   safeHandle('knowledge-base:update-settings', async (_event, settings: { enabled?: boolean; confidenceThreshold?: number }) => {
-    try { knowledgeBase.updateSettings(settings || {}); return { success: true, settings: knowledgeBase.getSettings() }; }
+    try { await knowledgeBase.updateSettings(settings || {}); return { success: true, settings: knowledgeBase.getSettings() }; }
     catch (error: any) { return { success: false, error: error?.message || 'Unable to save Knowledge Base settings' }; }
   });
   safeHandle('knowledge-base:add-document', async (_event, input: { name: string; dataBase64: string }) => {
@@ -4649,11 +4649,11 @@ export function initializeIpcHandlers(appState: AppState): void {
     }
   });
   safeHandle('knowledge-base:remove-document', async (_event, id: string) => {
-    try { knowledgeBase.removeDocument(id); return { success: true }; }
+    try { await knowledgeBase.removeDocument(id); return { success: true }; }
     catch (error: any) { return { success: false, error: error?.message || 'Unable to remove file' }; }
   });
   safeHandle('knowledge-base:clear', async () => {
-    try { knowledgeBase.clear(); return { success: true }; }
+    try { await knowledgeBase.clear(); return { success: true }; }
     catch (error: any) { return { success: false, error: error?.message || 'Unable to clear Knowledge Base' }; }
   });
 }
