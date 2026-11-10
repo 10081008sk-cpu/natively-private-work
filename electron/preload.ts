@@ -219,7 +219,6 @@ interface ElectronAPI {
   stopAudioTest: () => Promise<{ success: boolean }>
   whisperDownloadModel: (modelName: string) => Promise<{ success: boolean; output?: string; error?: string }>
   ensureOllamaRunning: () => Promise<any>;
-  forceRestartOllama: () => Promise<any>;
   getOnlyInterviewerMode: () => Promise<{ enabled: boolean }>;
   setOnlyInterviewerMode: (enabled: boolean) => Promise<{ success: boolean }>;
   getNoiseCancellationEnabled: () => Promise<{ enabled: boolean }>;
@@ -1101,7 +1100,6 @@ try {
   stopAudioTest: () => ipcRenderer.invoke('stop-audio-test'),
   whisperDownloadModel: (modelName: string) => ipcRenderer.invoke('whisper-download-model', modelName),
   ensureOllamaRunning: () => ipcRenderer.invoke('ensure-ollama-running'),
-  forceRestartOllama: () => ipcRenderer.invoke('force-restart-ollama'),
   getOnlyInterviewerMode: () => ipcRenderer.invoke('get-only-interviewer-mode'),
   setOnlyInterviewerMode: (enabled: boolean) => ipcRenderer.invoke('set-only-interviewer-mode', enabled),
   getNoiseCancellationEnabled: () => ipcRenderer.invoke('get-noise-cancellation-enabled'),
