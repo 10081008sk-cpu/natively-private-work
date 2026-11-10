@@ -432,8 +432,8 @@ export class CalendarManager extends EventEmitter {
                 .map((item: any) => ({
                     id: item.id,
                     title: item.summary || '(No Title)',
-                    startTime: item.start.dateTime,
-                    endTime: item.end.dateTime,
+                    startTime: item.start.dateTime || item.start.date,
+                    endTime: item.end.dateTime || item.end.date,
                     link: this.resolveMeetingLink(item),
                     source: 'google' as const,
                     attendees: Array.isArray(item.attendees)
