@@ -61,7 +61,7 @@ export class KnowledgeBaseService {
       this.store = {
         enabled: parsed.enabled === true,
         confidenceThreshold: typeof parsed.confidenceThreshold === 'number' ? Math.min(0.95, Math.max(0.5, parsed.confidenceThreshold)) : 0.8,
-        documents: Array.isArray(parsed.documents) ? parsed.documents : [],
+        documents: Array.isArray(parsed.documents) ? parsed.documents.filter((document: any) => document && typeof document.id === 'string' && typeof document.name === 'string' && Array.isArray(document.chunks)) : [],
       };
     } catch { this.store = { ...DEFAULT_STORE, documents: [] }; }
     return this.store;
