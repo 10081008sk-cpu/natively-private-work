@@ -4622,6 +4622,11 @@ export function initializeIpcHandlers(appState: AppState): void {
     return { success: true };
   });
 
+  safeHandle('stop-live-interview', async () => {
+    stopLiveInterviewService();
+    return { success: true };
+  });
+
   // Local Knowledge Base: documents remain on this device in the app userData folder.
   const knowledgeBase = require('./services/KnowledgeBaseService').KnowledgeBaseService.getInstance();
   safeHandle('knowledge-base:get-settings', async () => knowledgeBase.getSettings());
