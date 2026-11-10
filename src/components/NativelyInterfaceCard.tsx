@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import nativelyLogo from "../assets/logo.webp";
+import { NativelyLogoMark } from "./NativelyLogoMark";
 
 const DARK_GLASS = {
   background: "linear-gradient(160deg, rgba(90,90,108,0.88) 0%, rgba(55,55,70,0.93) 50%, rgba(36,36,50,0.97) 100%)",
@@ -64,7 +64,7 @@ const NativelyInterfaceCard = ({ className = "", isMobile = false, isStatic = fa
             {/* Logo */}
             <div className="w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden" style={DARK_GLASS}>
               {GLOSS}
-              <img src={nativelyLogo} alt="Natively" className="w-[28px] h-[28px] object-contain relative" draggable={false} />
+              <NativelyLogoMark size={28} className="relative" />
             </div>
 
             {/* Hide */}
