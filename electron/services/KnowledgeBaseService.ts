@@ -46,6 +46,7 @@ function splitIntoChunks(text: string): string[] {
 export class KnowledgeBaseService {
   private static instance: KnowledgeBaseService;
   private store: KnowledgeStore | null = null;
+  private writeQueue: Promise<void> = Promise.resolve();
   private get filePath(): string { return path.join(app.getPath('userData'), 'knowledge-base', 'index.json'); }
 
   static getInstance(): KnowledgeBaseService {
@@ -66,12 +67,17 @@ export class KnowledgeBaseService {
     return this.store;
   }
 
-  private save(): void {
-    const store = this.load();
-    fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
-    const tempPath = this.filePath + '.tmp';
-    fs.writeFileSync(tempPath, JSON.stringify(store), 'utf8');
-    fs.renameSync(tempPath, this.filePath);
+  private save(): Promise<void> {
+    const snapshot = JSON.stringify(this.load());
+    const write = async () => {
+      await fs.promises.mkdir(path.dirname(this.filePath), { recursive: true });
+      const tempPath = this.filePath + '.tmp';
+      await fs.promises.writeFile(tempPath, snapshot, 'utf8');
+      await fs.promises.rename(tempPath, this.filePath);
+    };
+    // Serialize writes so concurrent uploads/removals cannot overwrite newer state.
+    this.writeQueue = this.writeQueue.then(write, write);
+    return this.writeQueue;
   }
 
   getSettings(): { enabled: boolean; confidenceThreshold: number; files: Array<Omit<KnowledgeDocument, 'chunks'>> } {
@@ -83,13 +89,13 @@ export class KnowledgeBaseService {
     };
   }
 
-  updateSettings(settings: { enabled?: boolean; confidenceThreshold?: number }): void {
+  async updateSettings(settings: { enabled?: boolean; confidenceThreshold?: number }): Promise<void> {
     const store = this.load();
     if (typeof settings.enabled === 'boolean') store.enabled = settings.enabled;
     if (typeof settings.confidenceThreshold === 'number' && Number.isFinite(settings.confidenceThreshold)) {
       store.confidenceThreshold = Math.min(0.95, Math.max(0.5, settings.confidenceThreshold));
     }
-    this.save();
+    await this.save();
   }
 
   async addDocument(input: { name: string; dataBase64: string }): Promise<{ id: string; name: string; size: number; type: string; entriesCount: number; status: 'ready'; lastIndexed: number }> {
@@ -127,17 +133,17 @@ export class KnowledgeBaseService {
     };
     const store = this.load();
     store.documents.push(document);
-    this.save();
+    await this.save();
     return { id: document.id, name: document.name, size: document.size, type: document.type, entriesCount: document.entriesCount, status: 'ready', lastIndexed: document.lastIndexed };
   }
 
-  removeDocument(id: string): void {
+  async removeDocument(id: string): Promise<void> {
     const store = this.load();
     store.documents = store.documents.filter((document) => document.id !== id);
-    this.save();
+    await this.save();
   }
 
-  clear(): void { this.load().documents = []; this.save(); }
+  async clear(): Promise<void> { this.load().documents = []; await this.save(); }
 
   search(query: string, limit = 5): Array<{ text: string; source: string; confidence: number }> {
     const store = this.load();
