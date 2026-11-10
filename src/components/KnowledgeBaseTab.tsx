@@ -51,7 +51,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
     }
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -59,14 +59,14 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
     }
-  }, []);
+  };
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFileUpload(e.target.files[0]);
       e.target.value = '';
     }
-  }, []);
+  };
 
   const handleFileUpload = async (file: File) => {
     const allowedTypes = ['.txt', '.md', '.json', '.csv', '.pdf'];
@@ -162,7 +162,7 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
           <div>
             <h3 className="font-medium text-white">Enable Instant Knowledge Base Intercept</h3>
             <p className="text-sm text-gray-400">
-              Automatically search local knowledge base before querying web/LLM providers
+              Add matching local references to interview answers and suggestions when enabled
             </p>
           </div>
         </div>
@@ -184,15 +184,15 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
             <SlidersHorizontal className="w-5 h-5 text-yellow-400" />
           </div>
           <div>
-            <h3 className="font-medium text-white">NLP Semantic Match Confidence Threshold</h3>
+            <h3 className="font-medium text-white">Local Knowledge Match Confidence Threshold</h3>
             <p className="text-sm text-gray-400">
-              Minimum confidence score (0.50 - 0.95) for knowledge base answers to be used
+              Minimum keyword-match score (0.50 - 0.95) before local references are added to answers
             </p>
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Current: {currentSettings?.confidenceThreshold.toFixed(2)}</span>
+            <span className="text-sm text-gray-400">Current: {(currentSettings?.confidenceThreshold ?? 0.8).toFixed(2)}</span>
             <span className="text-sm font-medium text-white">
               {(currentSettings?.confidenceThreshold ?? 0.8) * 100}%
             </span>
