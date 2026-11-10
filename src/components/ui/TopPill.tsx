@@ -1,5 +1,5 @@
 import { ChevronUp, ChevronDown } from "lucide-react";
-import icon from "../icon.png";
+import { NativelyLogoMark } from "../NativelyLogoMark";
 import type { OverlayAppearance } from "../../lib/overlayAppearance";
 
 interface TopPillProps {
@@ -45,13 +45,7 @@ export default function TopPill({
           `}
                     style={appearance.iconStyle}
                 >
-                    <img
-                        src={icon}
-                        alt="Natively"
-                        className="w-[24px] h-[24px] object-contain opacity-95 scale-105 force-black-icon"
-                        draggable="false"
-                        onDragStart={(e) => e.preventDefault()}
-                    />
+                    <NativelyLogoMark size={24} className="opacity-95 scale-105" />
                 </button>
 
                 {/* CENTER SEGMENT */}
