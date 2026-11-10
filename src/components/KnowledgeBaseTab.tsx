@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle, Trash2, SlidersHorizontal, Eye, EyeOff } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Trash2, SlidersHorizontal } from 'lucide-react';
 
 interface KnowledgeBaseFile {
   id: string;
@@ -247,36 +247,18 @@ const KnowledgeBaseTab: React.FC<KnowledgeBaseTabProps> = ({ currentSettings, on
         </button>
 
         {showAdvanced && (
-          <div className="mt-4 space-y-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+          <div className="mt-4 space-y-3 p-4 bg-gray-800/50 rounded-xl border border-gray-700 text-sm">
             <div>
-              <h4 className="font-medium text-white mb-2">Cache Settings</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <label className="text-gray-400 block mb-1">Cache TTL</label>
-                  <span className="text-white">1 hour</span>
-                </div>
-                <div>
-                  <label className="text-gray-400 block mb-1">Max Cache Entries</label>
-                  <span className="text-white">1,000</span>
-                </div>
-              </div>
+              <h4 className="font-medium text-white mb-1">Local Indexing</h4>
+              <p className="text-gray-300">Documents are stored on this device. Text is split into paragraph-based chunks (up to 500 chunks per file).</p>
             </div>
             <div>
-              <h4 className="font-medium text-white mb-2">Matching Algorithm</h4>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" defaultChecked className="accent-blue-500" disabled />
-                  <span className="text-gray-300">Exact keyword & acronym matching (Tier 1)</span>
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" defaultChecked className="accent-blue-500" disabled />
-                  <span className="text-gray-300">TF-IDF cosine similarity (Tier 2)</span>
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" defaultChecked className="accent-blue-500" disabled />
-                  <span className="text-gray-300">Levenshtein distance fallback (Tier 3)</span>
-                </label>
-              </div>
+              <h4 className="font-medium text-white mb-1">Matching Method</h4>
+              <p className="text-gray-300">Lightweight keyword-overlap matching with basic plural normalization. This does not use embeddings or semantic vector search.</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-white mb-1">Limits</h4>
+              <p className="text-gray-300">Maximum file size: 10 MB. Supported: TXT, MD, JSON, CSV and text-based PDF.</p>
             </div>
           </div>
         )}
