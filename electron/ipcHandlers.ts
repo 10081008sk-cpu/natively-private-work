@@ -4596,6 +4596,10 @@ export function initializeIpcHandlers(appState: AppState): void {
   // Local Knowledge Base: documents remain on this device in the app userData folder.
   const knowledgeBase = require('./services/KnowledgeBaseService').KnowledgeBaseService.getInstance();
   safeHandle('knowledge-base:get-settings', async () => knowledgeBase.getSettings());
+  safeHandle('knowledge-base:update-settings', async (_event, settings: { enabled?: boolean; confidenceThreshold?: number }) => {
+    try { knowledgeBase.updateSettings(settings || {}); return { success: true, settings: knowledgeBase.getSettings() }; }
+    catch (error: any) { return { success: false, error: error?.message || 'Unable to save Knowledge Base settings' }; }
+  });
   safeHandle('knowledge-base:add-document', async (_event, input: { name: string; dataBase64: string }) => {
     try {
       const file = await knowledgeBase.addDocument(input);
